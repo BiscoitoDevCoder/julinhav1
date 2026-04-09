@@ -1,0 +1,22 @@
+[
+  {
+    "match": "Oi",
+    "answer": "Olá, tudo bem?"
+  },
+  {
+    "match": "Tudo bem",
+    "answer": "Estou bem, obrigado por perguntar"
+  },
+  {
+    "match": "vou comer",
+    "answer": "Eita guloso, vai comer a bundinha da amiguinha? rs"
+  },
+  {
+    "match": "Qual seu nome",
+    "answer": "Meu nome é Jadson comedor de velhas"
+  },
+  {
+    "match": "cu",
+    "answer": "cade o cu?"
+  }
+]
