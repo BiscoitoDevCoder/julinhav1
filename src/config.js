@@ -72,4 +72,4 @@ export const PROXY_PASSWORD = "";
 export const WAWEB_VERSION = [2, 3000, 1035691214];
 
 // Chave da OpenAI para o comando de suporte
-export const OPENAI_API_KEY = "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";
+export const OPENAI_API_KEY = "";
