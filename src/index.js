@@ -122,7 +122,12 @@ async function startBot() {
     socket.ev.on("messages.upsert", async (m) => {
       try {
         const msg = m.messages[0];
+
+        // Ignora se não houver mensagem, se for do bot ou se não for grupo
         if (!msg.message || msg.key.fromMe || !msg.key.remoteJid.endsWith('@g.us')) return;
+
+        // --- TRAVA DE FIGURINHAS: Se for sticker, não conta no ranking ---
+        if (msg.message.stickerMessage) return;
 
         const dbPath = "./database/historico.json";
         const gid = msg.key.remoteJid;
