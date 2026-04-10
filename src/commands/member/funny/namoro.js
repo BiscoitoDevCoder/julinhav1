@@ -1,5 +1,5 @@
 import { PREFIX } from "../../../config.js";
-// Criamos um objeto global para armazenar os pedidos pendentes
+/// Criamos um objeto global para armazenar os pedidos pendentes
 if (!global.pedidosNamoro) global.pedidosNamoro = {};
 
 export default {
@@ -7,14 +7,25 @@ export default {
   description: "Peça alguém em namoro!",
   commands: ["namorar", "pedido", "casar"],
   usage: `${PREFIX}namorar @usuario`,
-  handle: async ({ sendReply, remoteJid, isGroup, mentions, userJid }) => {
+  handle: async (props) => {
+    // Pegando as variáveis de forma segura
+    const { sendReply, remoteJid, isGroup, userJid } = props;
+    const mentions = props.mentions || []; // Garante que mentions seja ao menos uma lista vazia
+
     if (!isGroup) return;
 
-    const citado = mentions[0];
-    if (!citado) return await sendReply(`⚠️ Você precisa marcar alguém! Ex: ${PREFIX}namorar @usuario`);
-    if (citado === userJid) return await sendReply("⚠️ Você não pode namorar você mesmo... ou pode? Mas o bot não deixa! 😂");
+    // AQUI ESTAVA O ERRO: Agora verificamos se existe a posição [0] antes de ler
+    const citado = mentions.length > 0 ? mentions[0] : null;
 
-    // Armazena o pedido: Quem pediu, para quem pediu e em qual grupo
+    if (!citado) {
+      return await sendReply(`⚠️ Você precisa marcar alguém para pedir em namoro! \nExemplo: ${PREFIX}namorar @usuario`);
+    }
+
+    if (citado === userJid) {
+      return await sendReply("⚠️ Você não pode namorar você mesmo... tente marcar outra pessoa! 😂");
+    }
+
+    // Armazena o pedido
     global.pedidosNamoro[citado] = {
       de: userJid,
       para: citado,
