@@ -2,7 +2,7 @@ import { PREFIX } from "../../config.js";
 import fs from "fs";
 import path from "path";
 
-// Ajustando para a pasta database
+// Caminho para a pasta database
 const databasePath = path.resolve("database", "historico.json");
 
 const getDb = () => {
@@ -10,27 +10,28 @@ const getDb = () => {
   return JSON.parse(fs.readFileSync(databasePath, "utf-8"));
 };
 
-const saveDb = (db) => {
-  fs.writeFileSync(databasePath, JSON.stringify(db, null, 2));
-};
-
 export default {
   name: "rankativos",
   description: "Exibe o ranking de quem mais manda mensagem!",
   commands: ["rankativos", "ativos", "ranking"],
   usage: `${PREFIX}rankativos`,
-  handle: async ({ socket, remoteJid, fullMessage, isGroup, sendReply }) => {
+  handle: async (props) => {
+    // Pegando as propriedades de forma segura
+    const { socket, remoteJid, isGroup } = props;
+    
+    // Tenta pegar a mensagem original de várias formas para evitar o erro de 'fromMe'
+    const m = props.fullMessage || props.m || props.message;
+
     try {
       if (!isGroup) return;
 
       const db = getDb();
       const groupId = remoteJid;
 
-      if (!db[groupId]) {
-        return await socket.sendMessage(remoteJid, { text: " telemetry_error: Ainda não há dados de mensagens neste grupo." }, { quoted: fullMessage });
+      if (!db[groupId] || Object.keys(db[groupId]).length === 0) {
+        return await socket.sendMessage(remoteJid, { text: "⚠️ Ainda não há dados de mensagens neste grupo." });
       }
 
-      // Transforma o objeto em array e organiza do maior para o menor
       const usuarios = Object.entries(db[groupId])
         .map(([id, data]) => ({ id, ...data }))
         .sort((a, b) => b.mensagens - a.mensagens)
@@ -43,13 +44,19 @@ export default {
         lista += `${medalhas[index]} *${u.nome}*: ${u.mensagens} msgs\n`;
       });
 
-      await socket.sendMessage(remoteJid, { 
-        text: lista,
+      // Só adiciona o quoted se o 'm' for válido e tiver a propriedade 'key'
+      const sendOptions = { 
         mentions: usuarios.map(u => u.id) 
-      }, { quoted: fullMessage });
+      };
+      
+      if (m && m.key) {
+        sendOptions.quoted = m;
+      }
+
+      await socket.sendMessage(remoteJid, { text: lista }, sendOptions);
 
     } catch (e) {
-      console.log("Erro no ranking:", e);
+      console.log("Erro no ranking:", e.message);
     }
   },
 };
