@@ -18,18 +18,17 @@ export default {
   description: "Exibe o ranking dos 5 que mais mandam mensagem!",
   commands: ["rankativos", "ativos", "ranking"],
   usage: `${PREFIX}rankativos`,
-  handle: async (props) => {
-    const { socket, remoteJid, isGroup } = props;
-    const m = props.fullMessage || props.m || props.message;
-
+  handle: async ({ sendReply, remoteJid, isGroup }) => {
     try {
-      if (!isGroup) return;
+      if (!isGroup) {
+        return await sendReply("O ranking só está disponível para grupos! 📊");
+      }
 
       const db = getDb();
       const groupId = remoteJid;
 
       if (!db[groupId] || Object.keys(db[groupId]).length === 0) {
-        return await socket.sendMessage(remoteJid, { text: "⚠️ O Manicômio ainda não registrou mensagens hoje." });
+        return await sendReply("⚠️ O Manicômio ainda não registrou mensagens hoje.");
       }
 
       const usuarios = Object.entries(db[groupId])
@@ -37,32 +36,27 @@ export default {
         .sort((a, b) => b.mensagens - a.mensagens)
         .slice(0, 5);
 
-      let lista = `📊 *TOP 5 ATIVOS - MANICÔMIO*\n`;
-      lista += `_Os pacientes mais falantes_\n\n`;
+      let response = `📊 *TOP 5 ATIVOS - MANICÔMIO*\n`;
+      response += `_Os pacientes mais falantes do Hóspicio_\n\n`;
 
       const mentions = [];
 
       usuarios.forEach((u, index) => {
-        // Limpa o ID para pegar só o número puro (sem :1, :2, etc)
-        const cleanId = u.id.split('@')[0].split(':')[0];
-        const finalJid = `${cleanId}@s.whatsapp.net`;
+        const number = u.id.split('@')[0];
+        const pos = index + 1;
         
-        mentions.push(finalJid); 
-        lista += `${index + 1}. @${cleanId} — *${u.mensagens}* msgs\n`;
+        // Seguindo o padrão do comando 'lindos'
+        response += `${pos}º - @${number} — *${u.mensagens}* msgs\n`;
+        mentions.push(u.id);
       });
 
-      lista += `\n_Contagem baseada no histórico do bot._`;
+      response += `\n_Contagem baseada no histórico do bot._`;
 
-      // Se m.key existe, ele cita a mensagem. Se não, manda solto.
-      const sendOptions = { mentions };
-      if (m && m.key) {
-        sendOptions.quoted = m;
-      }
-
-      await socket.sendMessage(remoteJid, { text: lista }, sendOptions);
+      // Usando o sendReply do seu bot (Texto, Mentions)
+      await sendReply(response, mentions);
 
     } catch (e) {
-      console.log("Erro no ranking:", e.message);
+      console.error("Erro no ranking:", e);
     }
   },
 };
