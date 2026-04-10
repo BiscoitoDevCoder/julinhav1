@@ -71,6 +71,8 @@
  *
  * Não modifique nada abaixo, a não ser que saiba o que está fazendo!
  */
+
+import fs from "fs"; // Adicionado para suportar o Ranking de Ativos
 import { connect } from "./connection.js";
 import { load } from "./loader.js";
 import { badMacHandler } from "./utils/badMacHandler.js";
@@ -91,23 +93,6 @@ process.on("uncaughtException", (error) => {
     process.exit(1);
   }
 });
-
-const dbPath = "./database/historico.json";
-const db = JSON.parse(fs.readFileSync(dbPath, "utf-8"));
-
-const gid = m.messages[0].key.remoteJid;
-const uid = m.messages[0].key.participant || gid;
-const name = m.messages[0].pushName || "Membro";
-
-if (gid.endsWith('@g.us')) {
-    if (!db[gid]) db[gid] = {};
-    if (!db[gid][uid]) db[gid][uid] = { nome: name, mensagens: 0 };
-    
-    db[gid][uid].mensagens += 1;
-    db[gid][uid].nome = name; // Mantém o nome atualizado
-    
-    fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
-}
 
 process.on("unhandledRejection", (reason) => {
   if (badMacHandler.handleError(reason, "unhandledRejection")) {
@@ -132,6 +117,34 @@ async function startBot() {
     }
 
     const socket = await connect();
+
+    // --- LÓGICA DE CONTAGEM DE MENSAGENS (RANK ATIVOS) ---
+    socket.ev.on("messages.upsert", async (m) => {
+      try {
+        const msg = m.messages[0];
+        if (!msg.message || msg.key.fromMe || !msg.key.remoteJid.endsWith('@g.us')) return;
+
+        const dbPath = "./database/historico.json";
+        const gid = msg.key.remoteJid;
+        const uid = msg.key.participant || gid;
+        const name = msg.pushName || "Membro";
+
+        if (!fs.existsSync("./database")) fs.mkdirSync("./database");
+        if (!fs.existsSync(dbPath)) fs.writeFileSync(dbPath, JSON.stringify({}));
+
+        const db = JSON.parse(fs.readFileSync(dbPath, "utf-8"));
+
+        if (!db[gid]) db[gid] = {};
+        if (!db[gid][uid]) db[gid][uid] = { nome: name, mensagens: 0 };
+        
+        db[gid][uid].mensagens += 1;
+        db[gid][uid].nome = name; 
+        
+        fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
+      } catch (err) {
+        // Erro silencioso para não interromper o bot
+      }
+    });
 
     load(socket);
 
