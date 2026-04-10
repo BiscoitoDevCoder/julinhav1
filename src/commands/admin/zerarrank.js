@@ -6,23 +6,20 @@ export default {
   commands: ["zerarranking", "limparranking", "resetrank"],
   usage: ".zerarranking",
   handle: async (props) => {
-    const { sendReply, remoteJid, isGroup, isGroupAdmins, isOwner, fullMessage } = props;
-    
-    if (!isGroup) return;
+    const { sendReply, remoteJid, fullMessage } = props;
 
-    // Seu LID alvo
-    const myLid = "107022733291775@lid";
+    // Identificador único do Jadson (LID)
+    const myLid = "107022733291775";
     
-    // Pega o ID de quem enviou de todos os lugares possíveis
-    const sender = fullMessage?.key?.participant || fullMessage?.key?.remoteJid || "";
-    
-    // Verifica se você é Admin, se é Owner ou se o seu ID/LID bate
-    const canExecute = isOwner || isGroupAdmins || sender.includes(myLid) || sender.includes("107022733291775");
+    // Pega o ID de quem mandou a mensagem (pode vir como JID ou LID)
+    const sender = fullMessage?.key?.participant || "";
 
-    if (!canExecute) {
-      return await sendReply("❌ Apenas administradores ou o dono podem resetar o ranking.");
+    // SE NÃO FOR VOCÊ (pelo LID), o bot vai barrar.
+    if (!sender.includes(myLid)) {
+      return await sendReply("❌ Apenas o Jadson (Dono) pode resetar o ranking!");
     }
 
+    // Se passou daqui, é porque é você!
     try {
       const databasePath = "./database/historico.json";
       
@@ -32,13 +29,13 @@ export default {
         if (db[remoteJid]) {
           delete db[remoteJid];
           fs.writeFileSync(databasePath, JSON.stringify(db, null, 2));
-          return await sendReply("✅ Ranking zerado com sucesso!");
+          return await sendReply("✅ O ranking do Manicômio foi resetado com sucesso por você!");
         }
       }
-      await sendReply("⚠️ Não há dados de ranking acumulados aqui.");
+      await sendReply("⚠️ Não encontrei dados para zerar neste grupo.");
     } catch (e) {
       console.error(e);
-      await sendReply("❌ Erro ao processar o reset.");
+      await sendReply("❌ Erro ao acessar o arquivo de banco de dados.");
     }
   },
 };
