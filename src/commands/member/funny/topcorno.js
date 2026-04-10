@@ -5,38 +5,37 @@ export default {
   description: "Exibe o ranking dos maiores cornos do grupo!",
   commands: ["topcornos", "cornos", "rankingcorno"],
   usage: `${PREFIX}topcornos`,
-  /**
-   * @param {CommandHandleProps} props
-   */
-  handle: async ({
-    sendReply,
-    remoteJid,
-    socket,
-    fullMessage
-  }) => {
-    // 1. Pega os membros do grupo
-    const groupMetadata = await socket.groupMetadata(remoteJid);
-    const participants = groupMetadata.participants;
+  handle: async (props) => {
+    // Vamos extrair apenas o essencial
+    const { socket, remoteJid, fullMessage } = props;
 
-    // 2. Embaralha e escolhe 5 "vítimas"
-    const sorteados = participants
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 5);
+    try {
+      // Verifica se é grupo
+      if (!remoteJid.endsWith("@g.us")) return;
 
-    // 3. Monta a lista com as medalhas
-    const medalhas = ["🥇", "🥈", "🥉", "4º", "5º"];
-    let ranking = "🐂 *RANKING DOS MAIORES CORNOS* 🐂\n_Cuidado, o chifre tá batendo no teto!_\n\n";
+      const groupMetadata = await socket.groupMetadata(remoteJid);
+      const participants = groupMetadata.participants;
 
-    sorteados.forEach((p, index) => {
-      ranking += `${medalhas[index]} @${p.id.split("@")[0]}\n`;
-    });
+      // Sorteia 5
+      const sorteados = participants
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 5);
 
-    ranking += "\n⚠️ *Status:* Chifre de ouro detectado!";
+      const medalhas = ["🥇", "🥈", "🥉", "4º", "5º"];
+      let ranking = "🐂 *RANKING DOS MAIORES CORNOS* 🐂\n\n";
 
-    // 4. Envia a resposta marcando a galera
-    await socket.sendMessage(remoteJid, {
-      text: ranking,
-      mentions: sorteados.map(p => p.id)
-    }, { quoted: fullMessage });
+      sorteados.forEach((p, index) => {
+        ranking += `${medalhas[index]} @${p.id.split("@")[0]}\n`;
+      });
+
+      // Enviando direto pelo socket para não depender de funções internas que dão erro
+      await socket.sendMessage(remoteJid, {
+        text: ranking,
+        mentions: sorteados.map(p => p.id)
+      }, { quoted: fullMessage });
+
+    } catch (e) {
+      console.log("Erro no topcornos:", e);
+    }
   },
 };

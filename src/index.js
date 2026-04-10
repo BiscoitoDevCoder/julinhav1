@@ -92,6 +92,23 @@ process.on("uncaughtException", (error) => {
   }
 });
 
+const dbPath = "./database/historico.json";
+const db = JSON.parse(fs.readFileSync(dbPath, "utf-8"));
+
+const gid = m.messages[0].key.remoteJid;
+const uid = m.messages[0].key.participant || gid;
+const name = m.messages[0].pushName || "Membro";
+
+if (gid.endsWith('@g.us')) {
+    if (!db[gid]) db[gid] = {};
+    if (!db[gid][uid]) db[gid][uid] = { nome: name, mensagens: 0 };
+    
+    db[gid][uid].mensagens += 1;
+    db[gid][uid].nome = name; // Mantém o nome atualizado
+    
+    fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
+}
+
 process.on("unhandledRejection", (reason) => {
   if (badMacHandler.handleError(reason, "unhandledRejection")) {
     return;
