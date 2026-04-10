@@ -15,7 +15,7 @@ const getDb = () => {
 
 export default {
   name: "rankativos",
-  description: "Exibe o ranking de quem mais manda mensagem!",
+  description: "Exibe o ranking dos 5 que mais mandam mensagem!",
   commands: ["rankativos", "ativos", "ranking"],
   usage: `${PREFIX}rankativos`,
   handle: async (props) => {
@@ -35,23 +35,26 @@ export default {
       const usuarios = Object.entries(db[groupId])
         .map(([id, data]) => ({ id, ...data }))
         .sort((a, b) => b.mensagens - a.mensagens)
-        .slice(0, 10);
+        .slice(0, 5);
 
-      let lista = `📊 *RANKING DE ATIVOS - MANICÔMIO*\n`;
-      lista += `_Os que mais movimentam o hospício_\n\n`;
+      let lista = `📊 *TOP 5 ATIVOS - MANICÔMIO*\n`;
+      lista += `_Os pacientes mais falantes_\n\n`;
+
+      const mentions = [];
 
       usuarios.forEach((u, index) => {
-        // Formata para marcar a pessoa: @número
-        const jid = u.id.split("@")[0];
-        lista += `${index + 1}. @${jid} — *${u.mensagens}* mensagens\n`;
+        // Limpa o ID para pegar só o número puro (sem :1, :2, etc)
+        const cleanId = u.id.split('@')[0].split(':')[0];
+        const finalJid = `${cleanId}@s.whatsapp.net`;
+        
+        mentions.push(finalJid); 
+        lista += `${index + 1}. @${cleanId} — *${u.mensagens}* msgs\n`;
       });
 
       lista += `\n_Contagem baseada no histórico do bot._`;
 
-      const sendOptions = { 
-        mentions: usuarios.map(u => u.id) 
-      };
-      
+      // Se m.key existe, ele cita a mensagem. Se não, manda solto.
+      const sendOptions = { mentions };
       if (m && m.key) {
         sendOptions.quoted = m;
       }
