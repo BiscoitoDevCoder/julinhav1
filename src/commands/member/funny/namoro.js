@@ -1,4 +1,7 @@
 import { PREFIX } from "../../../config.js";
+import { onlyNumbers } from "../../../utils/index.js";
+
+// Objeto global para salvar os pedidos
 if (!global.pedidosNamoro) global.pedidosNamoro = {};
 
 export default {
@@ -6,52 +9,41 @@ export default {
   description: "Peça alguém em namoro!",
   commands: ["namorar", "pedido", "casar"],
   usage: `${PREFIX}namorar @usuario`,
-  handle: async (props) => {
-    const { sendReply, remoteJid, isGroup, userJid, fullMessage } = props;
-    
+  handle: async ({ sendReply, userLid, replyLid, args, isReply, isGroup, remoteJid }) => {
     if (!isGroup) return;
 
-    // 1. Tenta pegar o ID pela via oficial
-    let citado = props.mentions?.[0] || 
-                 fullMessage?.message?.extendedTextMessage?.contextInfo?.participant;
+    // Lógica idêntica ao jantar: pega do reply ou do primeiro argumento
+    const targetLid = isReply
+      ? replyLid
+      : args[0]
+      ? `${onlyNumbers(args[0])}@lid`
+      : null;
 
-    // 2. SE FALHAR (o seu caso), vamos extrair o número do texto manualmente
-    if (!citado) {
-      // Pega o texto da mensagem (ex: "*namorar @5527999999999")
-      const text = fullMessage?.message?.conversation || 
-                   fullMessage?.message?.extendedTextMessage?.text || "";
-      
-      // Procura por números logo após o @
-      const match = text.match(/@(\d+)/);
-      if (match && match[1]) {
-        citado = `${match[1]}@s.whatsapp.net`;
-      }
+    if (!targetLid) {
+      return await sendReply("⚠️ Você precisa mencionar um usuário ou responder uma mensagem para pedir em namoro!");
     }
 
-    if (!citado) {
-      return await sendReply(`⚠️ O bot não conseguiu ler a marcação.\n\nDigite o comando e marque a pessoa com @ corretamente!`);
+    if (targetLid === userLid) {
+      return await sendReply("⚠️ Tentar namorar você mesmo? Melhore essa autoestima! 😂");
     }
 
-    if (citado === userJid) {
-      return await sendReply("⚠️ Você não pode namorar você mesmo! 😂");
-    }
-
-    // Registra o pedido
-    global.pedidosNamoro[citado] = {
-      de: userJid,
-      para: citado,
+    // Armazena o pedido usando o LID
+    global.pedidosNamoro[targetLid] = {
+      de: userLid,
+      para: targetLid,
       grupo: remoteJid,
       timestamp: Date.now()
     };
 
-    const deNumero = userJid.split('@')[0];
-    const paraNumero = citado.split('@')[0];
+    const userNumber = onlyNumbers(userLid);
+    const targetNumber = onlyNumbers(targetLid);
 
     let texto = `💖 *PEDIDO DE NAMORO* 💖\n\n`;
-    texto += `@${deNumero} pediu @${paraNumero} em namoro! 😍\n\n`;
-    texto += `👉 @${paraNumero}, você aceita?\n`;
-    texto += `Responda com *S* (Sim) ou *N* (Não).`;
+    texto += `@${userNumber} está pedindo a mão de @${targetNumber} em namoro! 😍\n\n`;
+    texto += `👉 @${targetNumber}, você aceita?\n`;
+    texto += `Responda com *S* para Sim ou *N* para Não.`;
 
-    await sendReply(texto, [userJid, citado]);
+    // Envia mencionando os LIDs para ficar azul
+    await sendReply(texto, [userLid, targetLid]);
   },
 };
