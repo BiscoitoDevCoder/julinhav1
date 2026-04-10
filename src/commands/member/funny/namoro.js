@@ -1,5 +1,4 @@
-import { PREFIX } from "../../config.js";
-
+import { PREFIX } from "../../../config.js";
 // Criamos um objeto global para armazenar os pedidos pendentes
 if (!global.pedidosNamoro) global.pedidosNamoro = {};
 
