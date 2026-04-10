@@ -5,14 +5,19 @@ export default {
   description: "Zera o ranking de ativos do grupo!",
   commands: ["zerarranking", "limparranking", "resetrank"],
   usage: ".zerarranking",
-  handle: async ({ sendReply, remoteJid, isGroup, isGroupAdmins, isOwner, userJid }) => {
+  handle: async (props) => {
+    const { sendReply, remoteJid, isGroup, isGroupAdmins, isOwner, fullMessage } = props;
+    
     if (!isGroup) return;
 
-    // Seu LID específico para garantir que só você tenha o poder supremo
+    // Seu LID alvo
     const myLid = "107022733291775@lid";
     
-    // Se você for o dono pelo LID, ignora qualquer outra trava
-    const canExecute = isOwner || isGroupAdmins || userJid === myLid;
+    // Pega o ID de quem enviou de todos os lugares possíveis
+    const sender = fullMessage?.key?.participant || fullMessage?.key?.remoteJid || "";
+    
+    // Verifica se você é Admin, se é Owner ou se o seu ID/LID bate
+    const canExecute = isOwner || isGroupAdmins || sender.includes(myLid) || sender.includes("107022733291775");
 
     if (!canExecute) {
       return await sendReply("❌ Apenas administradores ou o dono podem resetar o ranking.");
@@ -27,13 +32,13 @@ export default {
         if (db[remoteJid]) {
           delete db[remoteJid];
           fs.writeFileSync(databasePath, JSON.stringify(db, null, 2));
-          return await sendReply("✅ O ranking do Manicômio foi resetado via LID!");
+          return await sendReply("✅ Ranking zerado com sucesso!");
         }
       }
-      await sendReply("⚠️ Não há dados de ranking para este grupo.");
+      await sendReply("⚠️ Não há dados de ranking acumulados aqui.");
     } catch (e) {
-      console.error("Erro ao zerar ranking:", e);
-      await sendReply("❌ Erro interno ao tentar limpar os dados.");
+      console.error(e);
+      await sendReply("❌ Erro ao processar o reset.");
     }
   },
 };
