@@ -1,21 +1,19 @@
+import { PREFIX } from "../../config.js";
 import fs from "fs";
-import path from "path";
 
-// Usamos ./ para garantir que ele pegue a pasta da raiz do bot
 const databasePath = "./database/historico.json";
 
 export default {
   name: "zerarranking",
   description: "Zera o ranking de ativos do grupo!",
   commands: ["zerarranking", "limparranking", "resetrank"],
-  usage: `.zerarranking`,
+  usage: `${PREFIX}zerarranking`,
   handle: async ({ sendReply, remoteJid, isGroup, isGroupAdmins, isOwner }) => {
-    // 1. Só funciona em grupo
     if (!isGroup) return;
 
-    // 2. Trava de segurança: Só o dono do bot ou admins do grupo podem zerar
+    // Só permite se for Admin do grupo ou Dono do bot
     if (!isGroupAdmins && !isOwner) {
-      return await sendReply("❌ Apenas administradores podem zerar o ranking!");
+      return await sendReply("❌ Apenas administradores podem resetar o ranking.");
     }
 
     try {
@@ -25,16 +23,14 @@ export default {
         if (db[remoteJid]) {
           delete db[remoteJid];
           fs.writeFileSync(databasePath, JSON.stringify(db, null, 2));
-          return await sendReply("✅ O Manicômio foi resetado! O ranking de ativos agora está zerado.");
+          return await sendReply("✅ O ranking de ativos foi zerado com sucesso!");
         } else {
-          return await sendReply("⚠️ Não encontrei nenhum dado de mensagens deste grupo para zerar.");
+          return await sendReply("⚠️ Não há dados de mensagens para este grupo.");
         }
-      } else {
-        return await sendReply("⚠️ O arquivo de banco de dados ainda não foi criado.");
       }
     } catch (e) {
-      console.error("Erro ao zerar ranking:", e);
-      await sendReply("❌ Erro interno ao tentar limpar o JSON.");
+      console.error(e);
+      await sendReply("❌ Erro ao tentar zerar o ranking.");
     }
   },
 };
