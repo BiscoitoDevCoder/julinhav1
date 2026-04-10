@@ -2,12 +2,15 @@ import { PREFIX } from "../../config.js";
 import fs from "fs";
 import path from "path";
 
-// Caminho para a pasta database
 const databasePath = path.resolve("database", "historico.json");
 
 const getDb = () => {
   if (!fs.existsSync(databasePath)) return {};
-  return JSON.parse(fs.readFileSync(databasePath, "utf-8"));
+  try {
+    return JSON.parse(fs.readFileSync(databasePath, "utf-8"));
+  } catch (e) {
+    return {};
+  }
 };
 
 export default {
@@ -16,10 +19,7 @@ export default {
   commands: ["rankativos", "ativos", "ranking"],
   usage: `${PREFIX}rankativos`,
   handle: async (props) => {
-    // Pegando as propriedades de forma segura
     const { socket, remoteJid, isGroup } = props;
-    
-    // Tenta pegar a mensagem original de várias formas para evitar o erro de 'fromMe'
     const m = props.fullMessage || props.m || props.message;
 
     try {
@@ -29,7 +29,7 @@ export default {
       const groupId = remoteJid;
 
       if (!db[groupId] || Object.keys(db[groupId]).length === 0) {
-        return await socket.sendMessage(remoteJid, { text: "⚠️ Ainda não há dados de mensagens neste grupo." });
+        return await socket.sendMessage(remoteJid, { text: "⚠️ O Manicômio ainda não registrou mensagens hoje." });
       }
 
       const usuarios = Object.entries(db[groupId])
@@ -37,14 +37,17 @@ export default {
         .sort((a, b) => b.mensagens - a.mensagens)
         .slice(0, 10);
 
-      let lista = `🏆 *RANKING DE ATIVOS - MANICÔMIO* 🏆\n\n`;
-      const medalhas = ["🥇", "🥈", "🥉", "4º", "5º", "6º", "7º", "8º", "9º", "10º"];
+      let lista = `📊 *RANKING DE ATIVOS - MANICÔMIO*\n`;
+      lista += `_Os que mais movimentam o hospício_\n\n`;
 
       usuarios.forEach((u, index) => {
-        lista += `${medalhas[index]} *${u.nome}*: ${u.mensagens} msgs\n`;
+        // Formata para marcar a pessoa: @número
+        const jid = u.id.split("@")[0];
+        lista += `${index + 1}. @${jid} — *${u.mensagens}* mensagens\n`;
       });
 
-      // Só adiciona o quoted se o 'm' for válido e tiver a propriedade 'key'
+      lista += `\n_Contagem baseada no histórico do bot._`;
+
       const sendOptions = { 
         mentions: usuarios.map(u => u.id) 
       };
