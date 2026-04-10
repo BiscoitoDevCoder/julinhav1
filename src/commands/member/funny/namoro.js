@@ -17,14 +17,18 @@ export default {
       return await sendReply("⚠️ Você precisa mencionar um usuário ou responder uma mensagem!");
     }
 
-    // --- TRAVA DE EXCLUSIVIDADE ---
+    // --- TRAVA DE EXCLUSIVIDADE COM MARCAÇÃO ---
     const pessoaExclusiva = "162474837987395@lid";
     const donoExclusivo = "107022733291775@lid";
 
     if (targetLid === pessoaExclusiva && userLid !== donoExclusivo) {
-      return await sendReply("❌ Desculpe betinha, essa pessoa tem dono!");
+      const donoNumero = onlyNumbers(donoExclusivo);
+      return await sendReply(
+        `❌ Desculpe betinha, essa pessoa tem dono! Pergunta pro @${donoNumero} se ele deixa... (spoiler: não deixa).`,
+        [donoExclusivo]
+      );
     }
-    // ------------------------------
+    // ------------------------------------------
 
     if (targetLid === userLid) {
       return await sendReply("⚠️ Você não pode namorar você mesmo! 😂");
