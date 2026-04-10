@@ -8,24 +8,25 @@ export default {
   commands: ["namorar", "pedido", "casar"],
   usage: `${PREFIX}namorar @usuario`,
   handle: async (props) => {
-    // Pegando as variáveis de forma segura
-    const { sendReply, remoteJid, isGroup, userJid } = props;
-    const mentions = props.mentions || []; // Garante que mentions seja ao menos uma lista vazia
-
+    const { sendReply, remoteJid, isGroup, userJid, fullMessage } = props;
+    
     if (!isGroup) return;
 
-    // AQUI ESTAVA O ERRO: Agora verificamos se existe a posição [0] antes de ler
-    const citado = mentions.length > 0 ? mentions[0] : null;
+    // 1. Tenta pegar por menção direta, ou por quem você respondeu (quoted), ou da lista de mentions
+    const mentions = props.mentions || [];
+    const quotedMsg = fullMessage?.message?.extendedTextMessage?.contextInfo?.participant;
+    
+    const citado = mentions[0] || quotedMsg;
 
     if (!citado) {
-      return await sendReply(`⚠️ Você precisa marcar alguém para pedir em namoro! \nExemplo: ${PREFIX}namorar @usuario`);
+      return await sendReply(`⚠️ Você precisa marcar alguém ou responder à mensagem da pessoa!\nExemplo: ${PREFIX}namorar @usuario`);
     }
 
     if (citado === userJid) {
-      return await sendReply("⚠️ Você não pode namorar você mesmo... tente marcar outra pessoa! 😂");
+      return await sendReply("⚠️ Tentar namorar você mesmo? Melhore essa autoestima! 😂");
     }
 
-    // Armazena o pedido
+    // Armazena o pedido no objeto global
     global.pedidosNamoro[citado] = {
       de: userJid,
       para: citado,
