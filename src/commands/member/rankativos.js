@@ -1,4 +1,4 @@
-import { PREFIX } from "../../../config.js";
+import { PREFIX } from "../../config.js";
 import fs from "fs";
 import path from "path";
 
