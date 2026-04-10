@@ -1,7 +1,6 @@
 import { PREFIX } from "../../../config.js";
 import { onlyNumbers } from "../../../utils/index.js";
 
-// Objeto global para salvar os pedidos
 if (!global.pedidosNamoro) global.pedidosNamoro = {};
 
 export default {
@@ -12,38 +11,32 @@ export default {
   handle: async ({ sendReply, userLid, replyLid, args, isReply, isGroup, remoteJid }) => {
     if (!isGroup) return;
 
-    // Lógica idêntica ao jantar: pega do reply ou do primeiro argumento
-    const targetLid = isReply
-      ? replyLid
-      : args[0]
-      ? `${onlyNumbers(args[0])}@lid`
-      : null;
+    const targetLid = isReply ? replyLid : args[0] ? `${onlyNumbers(args[0])}@lid` : null;
 
     if (!targetLid) {
-      return await sendReply("⚠️ Você precisa mencionar um usuário ou responder uma mensagem para pedir em namoro!");
+      return await sendReply("⚠️ Você precisa mencionar um usuário ou responder uma mensagem!");
     }
 
     if (targetLid === userLid) {
-      return await sendReply("⚠️ Tentar namorar você mesmo? Melhore essa autoestima! 😂");
+      return await sendReply("⚠️ Você não pode namorar você mesmo! 😂");
     }
 
-    // Armazena o pedido usando o LID
+    // Salva o pedido na memória global
     global.pedidosNamoro[targetLid] = {
       de: userLid,
       para: targetLid,
-      grupo: remoteJid,
-      timestamp: Date.now()
+      grupo: remoteJid
     };
 
     const userNumber = onlyNumbers(userLid);
     const targetNumber = onlyNumbers(targetLid);
 
-    let texto = `💖 *PEDIDO DE NAMORO* 💖\n\n`;
-    texto += `@${userNumber} está pedindo a mão de @${targetNumber} em namoro! 😍\n\n`;
-    texto += `👉 @${targetNumber}, você aceita?\n`;
-    texto += `Responda com *S* para Sim ou *N* para Não.`;
-
-    // Envia mencionando os LIDs para ficar azul
-    await sendReply(texto, [userLid, targetLid]);
+    await sendReply(
+      `💖 *PEDIDO DE NAMORO* 💖\n\n` +
+      `@${userNumber} pediu a mão de @${targetNumber} em namoro! 😍\n\n` +
+      `👉 @${targetNumber}, você aceita?\n` +
+      `Responda com *S* para Sim ou *N* para Não.`,
+      [userLid, targetLid]
+    );
   },
 };
