@@ -8,18 +8,20 @@ export default {
   handle: async (props) => {
     const { sendReply, remoteJid, fullMessage } = props;
 
-    // Identificador único do Jadson (LID)
-    const myLid = "107022733291775";
+    // As duas formas que o seu bot pode te enxergar
+    const myLid = "107022733291775@lid";
+    const myJid = "5527992056721@s.whatsapp.net"; // Coloquei seu número de Cariacica/ES
     
-    // Pega o ID de quem mandou a mensagem (pode vir como JID ou LID)
+    // Pega o ID de quem mandou de forma bruta
     const sender = fullMessage?.key?.participant || "";
 
-    // SE NÃO FOR VOCÊ (pelo LID), o bot vai barrar.
-    if (!sender.includes(myLid)) {
-      return await sendReply("❌ Apenas o Jadson (Dono) pode resetar o ranking!");
+    // Se o remetente contiver o seu LID OU o seu JID, ele libera
+    const isMaster = sender.includes(myLid) || sender.includes(myJid);
+
+    if (!isMaster) {
+      return await sendReply(`❌ Acesso negado. Seu ID atual é: ${sender.split('@')[0]}`);
     }
 
-    // Se passou daqui, é porque é você!
     try {
       const databasePath = "./database/historico.json";
       
@@ -29,13 +31,12 @@ export default {
         if (db[remoteJid]) {
           delete db[remoteJid];
           fs.writeFileSync(databasePath, JSON.stringify(db, null, 2));
-          return await sendReply("✅ O ranking do Manicômio foi resetado com sucesso por você!");
+          return await sendReply("✅ Ranking resetado com sucesso, Jadson!");
         }
       }
-      await sendReply("⚠️ Não encontrei dados para zerar neste grupo.");
+      await sendReply("⚠️ Não há dados de ranking para este grupo.");
     } catch (e) {
-      console.error(e);
-      await sendReply("❌ Erro ao acessar o arquivo de banco de dados.");
+      await sendReply("❌ Erro ao acessar o banco de dados.");
     }
   },
 };
