@@ -41,7 +41,7 @@ async function startBot() {
         const isGroup = gid.endsWith('@g.us');
         const uid = msg.key.participant || gid;
 
-        // --- 1. LÓGICA DE RESPOSTA DO NAMORO ---
+        // --- 1. LÓGICA DE RESPOSTA DO NAMORO (COM DATABASE) ---
         if (global.pedidosNamoro && isGroup) {
             const text = (msg.message?.conversation || msg.message?.extendedTextMessage?.text || "").toLowerCase().trim();
             const pedido = global.pedidosNamoro[uid];
@@ -51,8 +51,25 @@ async function startBot() {
                 const paraNum = pedido.para.split('@')[0];
 
                 if (text === 's') {
+                    // --- SALVANDO NA DATABASE DE CASAIS ---
+                    const casaisPath = "./database/casais.json";
+                    if (!fs.existsSync("./database")) fs.mkdirSync("./database");
+                    if (!fs.existsSync(casaisPath)) fs.writeFileSync(casaisPath, JSON.stringify({}));
+
+                    const casaisDb = JSON.parse(fs.readFileSync(casaisPath, "utf-8"));
+                    
+                    // Salva usando o LID de quem aceitou como chave para evitar duplicatas
+                    casaisDb[uid] = {
+                        de: pedido.de,
+                        para: pedido.para,
+                        data: new Date().toLocaleDateString('pt-BR')
+                    };
+
+                    fs.writeFileSync(casaisPath, JSON.stringify(casaisDb, null, 2));
+                    // ---------------------------------------
+
                     await socket.sendMessage(gid, { 
-                        text: `💍 *FOI DITO O SIM!* 💍\n\nAgora o casal mais lindo do Manicômio é @${deNum} e @${paraNum}! ❤️✨`,
+                        text: `💍 *FOI DITO O SIM!* 💍\n\nAgora o casal mais lindo do Manicômio é @${deNum} e @${paraNum}! ❤️✨\n\nO relacionamento foi registrado no banco de dados oficial!`,
                         mentions: [pedido.de, pedido.para]
                     });
                     delete global.pedidosNamoro[uid]; 
