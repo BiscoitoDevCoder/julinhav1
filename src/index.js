@@ -10,11 +10,30 @@ import { badMacHandler } from "./utils/badMacHandler.js";
 import { bannerLog, errorLog, infoLog, warningLog } from "./utils/logger.js";
 
 // --- CONFIGURAÇÃO DO ANTI-FILTRO ---
+// --- CONFIGURAÇÃO DO ANTI-FILTRO AMPLIADA ---
 const palavrasProibidas = [
-  /\bnazi\b/gi, /\bnazista\b/gi, /\bnazismo\b/gi, /\bhitler\b/gi, /卐/g, 
-  /\bracista\b/gi, /\bmacaco\b/gi, /\bnigga\b/gi,
-  /\bputa\b/gi, /\bvagabunda\b/gi, /\brapariga\b/gi
+  // --- Ideologias Sensíveis e Ódio ---
+  /\bnazi\b/gi, /\bnazista\b/gi, /\bnazismo\b/gi, /\bhitler\b/gi, /卐/g, /卍/g,
+  
+  // --- Racismo e Xenofobia ---
+  /\bracista\b/gi, /\bmacaco\b/gi, /\bnigga\b/gi, /\bpreto imundo\b/gi, /\bmacaca\b/gi,
+  /\bnordestino\b/gi, // Se usado como ofensa no contexto do seu grupo
+  
+  // --- Ofensas de Baixo Calão e Misoginia ---
+  /\bputa\b/gi, /\bvagabunda\b/gi, /\brapariga\b/gi, /\bvadi[ao]\b/gi, /\bprostituta\b/gi,
+  /\barrombad[ao]\b/gi, /\bcadel[ao]\b/gi, /\bquenga\b/gi,
+  
+  // --- Gordofobia e Aparência ---
+  /\bgord[oa]\b/gi, /\bporc[oa]\b/gi, /\brolha de poço\b/gi, /\bobs[oa]\b/gi,
+  
+  // --- Conteúdo Sexual e Abuso ---
+  /\bestupr[ao]\b/gi, /\bestuprar\b/gi, /\bgozar\b/gi, /\bgoz[ei]\b/gi, /\bpunheta\b/gi,
+  /\bporno\b/gi, /\bxvid\b/gi, /\bpenis\b/gi, /\bvagina\b/gi,
+  
+  // --- Discurso de Ódio Geral ---
+  /\blixo\b/gi, /\bescoria\b/gi, /\bverme\b/gi, /\bmorre\b/gi, /\bsuicidio\b/gi
 ];
+
 
 process.on("uncaughtException", (error) => {
   if (badMacHandler.handleError(error, "uncaughtException")) return;
