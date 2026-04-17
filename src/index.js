@@ -47,7 +47,7 @@ async function startBot() {
         const isGroup = gid.endsWith('@g.us');
         const uid = msg.key.participant || gid;
 
-        // --- 0. LÓGICA DO ANTI-FILTRO (AUTODELETE) ---
+        // --- 0. LÓGICA DO ANTI-FILTRO (AUTODELETE CORRIGIDO) ---
         if (isGroup) {
             const messageText = 
               msg.message?.conversation || 
@@ -58,15 +58,8 @@ async function startBot() {
             const temPalavraProibida = palavrasProibidas.some((regex) => regex.test(messageText));
 
             if (temPalavraProibida) {
-                // Apaga a mensagem
-                await socket.sendMessage(gid, { 
-                    delete: { 
-                        remoteJid: gid, 
-                        fromMe: false, 
-                        id: msg.key.id, 
-                        participant: uid 
-                    } 
-                });
+                // Apaga a mensagem usando a key original (mais preciso)
+                await socket.sendMessage(gid, { delete: msg.key });
 
                 // Envia o aviso oficial
                 const aviso = `⚠️ *AVISO DO SISTEMA* ⚠️\n\n` +
@@ -76,7 +69,7 @@ async function startBot() {
                   text: aviso, 
                   mentions: [uid] 
                 });
-                return; // Para o processamento aqui para não contar no ranking nem no namoro
+                return; 
             }
         }
 
