@@ -10,7 +10,6 @@ const palavrasProibidas = [
   // --- Racismo ---
   /\bracista\b/gi, 
   /\bmacaco\b/gi, 
-  /\bpreto\b/gi, 
   /\bnigga\b/gi,
   
   // --- Ofensas de Baixo Calão ---
@@ -21,6 +20,8 @@ const palavrasProibidas = [
 
 export default {
   name: "antifiltro",
+  description: "Filtro automático de mensagens ofensivas",
+  commands: ["antifiltro"], 
   handle: async ({ socket, remoteJid, fullMessage, deleteMessage }) => {
     // 1. Pega o texto da mensagem (conversa, texto estendido ou legenda)
     const messageText = 
@@ -45,7 +46,7 @@ export default {
           participant: infrator,
         });
 
-        // 5. Envia o aviso oficial conforme solicitado
+        // 5. Envia o aviso oficial
         const textoAviso = `⚠️ *AVISO DO SISTEMA* ⚠️\n\n` +
           `Mensagem do usuário @${infrator.split('@')[0]} removida por conter conteudo ofensivo, de violação as diretrizes do grupo ou de alusao a ideologias sensiveis.`;
 
@@ -55,7 +56,7 @@ export default {
         });
 
       } catch (error) {
-        console.error("Erro ao tentar apagar mensagem automática ou enviar aviso:", error);
+        console.error("Erro no antifiltro:", error);
       }
     }
   },
