@@ -9,6 +9,13 @@ import { load } from "./loader.js";
 import { badMacHandler } from "./utils/badMacHandler.js";
 import { bannerLog, errorLog, infoLog, warningLog } from "./utils/logger.js";
 
+// --- CONFIGURAÇÃO DO ANTI-FILTRO ---
+const palavrasProibidas = [
+  /\bnazi\b/gi, /\bnazista\b/gi, /\bnazismo\b/gi, /\bhitler\b/gi, /卐/g, 
+  /\bracista\b/gi, /\bmacaco\b/gi, /\bnigga\b/gi,
+  /\bputa\b/gi, /\bvagabunda\b/gi, /\brapariga\b/gi
+];
+
 process.on("uncaughtException", (error) => {
   if (badMacHandler.handleError(error, "uncaughtException")) return;
   errorLog(`Erro crítico não capturado: ${error.message}`);
@@ -31,7 +38,6 @@ async function startBot() {
 
     const socket = await connect();
 
-    // --- LÓGICA DE CONTAGEM DE MENSAGENS E NAMORO ---
     socket.ev.on("messages.upsert", async (m) => {
       try {
         const msg = m.messages[0];
@@ -40,6 +46,39 @@ async function startBot() {
         const gid = msg.key.remoteJid;
         const isGroup = gid.endsWith('@g.us');
         const uid = msg.key.participant || gid;
+
+        // --- 0. LÓGICA DO ANTI-FILTRO (AUTODELETE) ---
+        if (isGroup) {
+            const messageText = 
+              msg.message?.conversation || 
+              msg.message?.extendedTextMessage?.text || 
+              msg.message?.imageMessage?.caption || 
+              "";
+
+            const temPalavraProibida = palavrasProibidas.some((regex) => regex.test(messageText));
+
+            if (temPalavraProibida) {
+                // Apaga a mensagem
+                await socket.sendMessage(gid, { 
+                    delete: { 
+                        remoteJid: gid, 
+                        fromMe: false, 
+                        id: msg.key.id, 
+                        participant: uid 
+                    } 
+                });
+
+                // Envia o aviso oficial
+                const aviso = `⚠️ *AVISO DO SISTEMA* ⚠️\n\n` +
+                  `Mensagem do usuário @${uid.split('@')[0]} removida por conter conteudo ofensivo, de violação as diretrizes do grupo ou de alusao a ideologias sensiveis.`;
+
+                await socket.sendMessage(gid, { 
+                  text: aviso, 
+                  mentions: [uid] 
+                });
+                return; // Para o processamento aqui para não contar no ranking nem no namoro
+            }
+        }
 
         // --- 1. LÓGICA DE RESPOSTA DO NAMORO (COM DATABASE) ---
         if (global.pedidosNamoro && isGroup) {
@@ -51,14 +90,12 @@ async function startBot() {
                 const paraNum = pedido.para.split('@')[0];
 
                 if (text === 's') {
-                    // --- SALVANDO NA DATABASE DE CASAIS ---
                     const casaisPath = "./database/casais.json";
                     if (!fs.existsSync("./database")) fs.mkdirSync("./database");
                     if (!fs.existsSync(casaisPath)) fs.writeFileSync(casaisPath, JSON.stringify({}));
 
                     const casaisDb = JSON.parse(fs.readFileSync(casaisPath, "utf-8"));
                     
-                    // Salva usando o LID de quem aceitou como chave para evitar duplicatas
                     casaisDb[uid] = {
                         de: pedido.de,
                         para: pedido.para,
@@ -66,7 +103,6 @@ async function startBot() {
                     };
 
                     fs.writeFileSync(casaisPath, JSON.stringify(casaisDb, null, 2));
-                    // ---------------------------------------
 
                     await socket.sendMessage(gid, { 
                         text: `💍 *FOI DITO O SIM!* 💍\n\nAgora o casal mais lindo do Manicômio é @${deNum} e @${paraNum}! ❤️✨\n\nO relacionamento foi registrado no banco de dados oficial!`,
