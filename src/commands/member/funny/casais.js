@@ -29,7 +29,7 @@ export default {
     listaCasais.forEach((casal, index) => {
       const deNum = onlyNumbers(casal.de);
       const paraNum = onlyNumbers(casal.para);
-      texto += `${index + 1}. @${deNum} ❤️ @${paraNum}\n`;
+      texto += `${index + 1}. @${deNum} & @${paraNum}\n`;
       mentions.push(casal.de, casal.para);
     });
 
