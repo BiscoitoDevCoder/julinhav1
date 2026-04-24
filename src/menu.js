@@ -1,7 +1,6 @@
 /**
- * Menu do bot
- *
- * @author Dev Gui
+ * Menu Moderno - Julinha v1
+ * Design Clean & Minimalista
  */
 import pkg from "../package.json" with { type: "json" };
 import { BOT_NAME } from "./config.js";
@@ -9,129 +8,56 @@ import { getPrefix } from "./utils/database.js";
 import { readMore } from "./utils/index.js";
 
 export function menuMessage(groupJid) {
-  const date = new Date();
-
   const prefix = getPrefix(groupJid);
+  const v = pkg.version;
 
-  return `╭━━⪩ 🌟 BEM VINDO! 🌟 ⪨━━${readMore()}
-• ${BOT_NAME}
-• Data: ${date.toLocaleDateString("pt-br")}
-• Hora: ${date.toLocaleTimeString("pt-br")}
-• Prefixo: ${prefix}
-• Versão: ${pkg.version}
+  return `┎───「 **${BOT_NAME.toUpperCase()}** 」────
+┃ 
+┃ 🖥️ **VERSÃO:** ${v}
+┃ ⚡ **PREFIXO:** ${prefix}
+┃ 📅 **DATA:** ${new Date().toLocaleDateString("pt-br")}
+┃${readMore()}
+┖───────────────────
 
-╰━━─「🪐」─━━
+┌───  **👑 STAFF**
+│ ➥ ${prefix}on • ${prefix}off
+│ ➥ ${prefix}setprefix • ${prefix}exec
+│ ➥ ${prefix}setmenu • ${prefix}proxy
+└───────────────
 
-╭━━⪩ 👑 DONO 👑 ⪨━━
-➤ ${prefix}exec
-➤ ${prefix}get-group-id
-➤ ${prefix}off
-➤ ${prefix}on
-➤ ${prefix}set-menu-image
-➤ ${prefix}set-prefix
-➤ ${prefix}set-spider-api-token
+┌───  **🛡️ ADMINISTRAÇÃO**
+│ ➥ ${prefix}ban • ${prefix}promover • ${prefix}rebaixar
+│ ➥ ${prefix}abrir • ${prefix}fechar • ${prefix}hidetag
+│ ➥ ${prefix}delete • ${prefix}revelar • ${prefix}limpar
+│ ➥ ${prefix}mute • ${prefix}unmute • ${prefix}link
+│ ➥ ${prefix}welcome • ${prefix}antilink • ${prefix}antievent
+└───────────────
 
-╰━━─「🌌」─━━
+┌───  **🎭 MANICÔMIO (NEW)**
+│ ➥ ${prefix}cirurgia 🩺
+│ ➥ ${prefix}amorodio ⚖️
+│ ➥ ${prefix}topex 🤡
+│ ➥ ${prefix}abracar • ${prefix}beijar • ${prefix}lutar
+│ ➥ ${prefix}matar • ${prefix}socar • ${prefix}jantar
+└───────────────
 
-╭━━⪩ 🛡️ ADMINS 🛡️ ⪨━━
-➤ ${prefix}abrir
-➤ ${prefix}add-auto-responder
-➤ ${prefix}agendar-mensagem
-➤ ${prefix}anti-audio (1/0)
-➤ ${prefix}anti-document (1/0)
-➤ ${prefix}anti-event (1/0)
-➤ ${prefix}anti-image (1/0)
-➤ ${prefix}anti-link (1/0)
-➤ ${prefix}anti-product (1/0)
-➤ ${prefix}anti-sticker (1/0)
-➤ ${prefix}anti-video (1/0)
-➤ ${prefix}auto-responder (1/0)
-➤ ${prefix}auto-sticker (1/0)
-➤ ${prefix}ban
-➤ ${prefix}delete
-➤ ${prefix}delete-auto-responder
-➤ ${prefix}exit (1/0)
-➤ ${prefix}fechar
-➤ ${prefix}hidetag
-➤ ${prefix}limpar
-➤ ${prefix}link-grupo
-➤ ${prefix}list-auto-responder
-➤ ${prefix}mute
-➤ ${prefix}only-admin (1/0)
-➤ ${prefix}promover
-➤ ${prefix}rebaixar
-➤ ${prefix}revelar
-➤ ${prefix}saldo
-➤ ${prefix}set-proxy
-➤ ${prefix}unmute
-➤ ${prefix}welcome (1/0)
+┌───  **✨ UTILITÁRIOS**
+│ ➥ ${prefix}sticker • ${prefix}ttp • ${prefix}attp • ${prefix}brat
+│ ➥ ${prefix}toimage • ${prefix}togif • ${prefix}tomp3
+│ ➥ ${prefix}perfil • ${prefix}ping • ${prefix}info • ${prefix}cep
+│ ➥ ${prefix}gerarlink • ${prefix}rename • ${prefix}fakechat
+└───────────────
 
-╰━━─「⭐」─━━
+┌───  **📥 DOWNLOADS & IA**
+│ ➥ ${prefix}play • ${prefix}ytmp3 • ${prefix}ytmp4 • ${prefix}ytsearch
+│ ➥ ${prefix}tiktok • ${prefix}ig • ${prefix}fb • ${prefix}pinterest
+│ ➥ ${prefix}gemini • ${prefix}gpt5 • ${prefix}flux • ${prefix}iasticker
+└───────────────
 
-╭━━⪩ 🌟 PRINCIPAL 🌟 ⪨━━
-➤ ${prefix}attp
-➤ ${prefix}brat
-➤ ${prefix}cep
-➤ ${prefix}exemplos-de-mensagens
-➤ ${prefix}fake-chat
-➤ ${prefix}gerar-link
-➤ ${prefix}info
-➤ ${prefix}meu-lid
-➤ ${prefix}perfil
-➤ ${prefix}ping
-➤ ${prefix}raw-message
-➤ ${prefix}rename
-➤ ${prefix}sticker
-➤ ${prefix}suporte
-➤ ${prefix}to-gif
-➤ ${prefix}to-image
-➤ ${prefix}to-mp3
-➤ ${prefix}ttp
-➤ ${prefix}yt-search
+┌───  **🎨 CANVAS & EDIÇÃO**
+│ ➥ ${prefix}blur • ${prefix}rip • ${prefix}pixel • ${prefix}gray
+│ ➥ ${prefix}bolsonaro • ${prefix}cadeia • ${prefix}inverter
+└───────────────
 
-╰━━─「🚀」─━━
-
-╭━━⪩ 📥 DOWNLOADS 📥 ⪨━━
-➤ ${prefix}facebook
-➤ ${prefix}instagram
-➤ ${prefix}play-audio
-➤ ${prefix}play-video
-➤ ${prefix}pinterest
-➤ ${prefix}tik-tok
-➤ ${prefix}yt-mp3
-➤ ${prefix}yt-mp4
-
-╰━━─「🎶」─━━
-
-╭━━⪩ 🎉 BRINCADEIRAS 🎉 ⪨━━
-➤ ${prefix}abracar
-➤ ${prefix}beijar
-➤ ${prefix}dado
-➤ ${prefix}jantar
-➤ ${prefix}lutar
-➤ ${prefix}matar
-➤ ${prefix}socar
-
-╰━━─「🎡」─━━
-
-╭━━⪩ 🤖 IA 🤖 ⪨━━
-➤ ${prefix}flux
-➤ ${prefix}gemini
-➤ ${prefix}gpt-5-mini
-➤ ${prefix}ia-sticker
-
-╰━━─「🚀」─━━
-
-╭━━⪩ 🎨 CANVAS 🎨 ⪨━━
-➤ ${prefix}blur
-➤ ${prefix}bolsonaro
-➤ ${prefix}cadeia
-➤ ${prefix}contraste
-➤ ${prefix}espelhar
-➤ ${prefix}gray
-➤ ${prefix}inverter
-➤ ${prefix}pixel
-➤ ${prefix}rip
-
-╰━━─「❇」─━━`;
+> 💡 _Digite ${prefix}help <comando> para saber mais._`;
 }
