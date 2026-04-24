@@ -4,7 +4,6 @@ export default {
   name: "amorodio",
   description: "Mede aleatoriamente o nível de amor ou ódio entre duas pessoas",
   commands: ["amorodio", "ao"],
-  usage: `${PREFIX}amorodio @mencione`,
   handle: async ({ socket, remoteJid, fullMessage }) => {
     const mentioned = fullMessage?.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
     const quoted = fullMessage?.message?.extendedTextMessage?.contextInfo?.participant;
@@ -18,26 +17,21 @@ export default {
 
     const autor = fullMessage.key.participant || fullMessage.key.remoteJid;
     
-    // IDs Privilegiados (Os protegidos pelo destino)
     const vip1 = "263419571765312@lid";
     const vip2 = "107022733291775@lid";
 
     let tipoSorteado;
     let porcentagem;
 
-    // --- LÓGICA MANIPULADA ---
     if ((autor === vip1 && alvo === vip2) || (autor === vip2 && alvo === vip1)) {
         tipoSorteado = "AMOR";
-        // Gera um número aleatório entre 80 e 90
         porcentagem = Math.floor(Math.random() * (90 - 80 + 1)) + 80;
     } else {
-        // Lógica normal para o resto dos mortais
         const tipos = ["AMOR", "ÓDIO"];
         tipoSorteado = tipos[Math.floor(Math.random() * tipos.length)];
         porcentagem = Math.floor(Math.random() * 101);
     }
 
-    // --- ESCOLHA DE EMOJI E FRASE ---
     let emoji = "";
     let frase = "";
     
