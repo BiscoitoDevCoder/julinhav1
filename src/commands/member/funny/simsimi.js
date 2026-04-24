@@ -1,9 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Sua chave mestre (O cara mais fiel da terra não erra a chave!)
+// Sua chave mestre - O Jadson é fiel e a chave também!
 const API_KEY = "AIzaSyDxckRqg3iqyyn6yUEw5pwWFWERmi6caPg"; 
-
-// Aqui está o segredo: Não passamos versão, deixamos a lib usar a padrão (v1)
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 export default {
@@ -16,25 +14,25 @@ export default {
     
     if (!pergunta) {
         return await socket.sendMessage(remoteJid, { 
-            text: "💊 Tá gastando minha memória pra quê? Manda a pergunta ou volta pro banho de sol, interno!" 
+            text: "💊 Tá gastando minha bateria pra quê? Manda a pergunta ou te mando pra solitária agora mesmo!" 
         }, { quoted: webMessage });
     }
 
     try {
-      // Forçamos o modelo 1.5-flash sem o prefixo beta
-      const model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash",
-      });
+      // AQUI ESTÁ A CURA: Forçamos a apiVersion 'v1' como o AI Studio sugeriu
+      const model = genAI.getGenerativeModel(
+        { model: "gemini-1.5-flash" },
+        { apiVersion: 'v1' } 
+      );
       
-      const prompt = `Você é a Julinha, a Escrava oficial do grupo 'Manicômio'. 
+      const prompt = `Você é a Julinha, a escrava oficial do grupo 'Manicômio'. 
       Seu criador é o Jadson, o cara mais fiel da terra. 
-      Você vive em um hospício. 
-      Sua personalidade é: CURTA, INTELIGENTE e COM MUITO DEBOCHE. 
-      Trate os outros usuários como loucos/internos. Seja ácida e sarcástica.
+      CONTEXTO: Você vive em um hospício/manicômio. 
+      PERSONALIDADE: Respostas CURTAS, INTELIGENTES e com MUITO DEBOCHE. 
+      INSTRUÇÃO: Trate os usuários como internos. Seja ácida, sarcástica e não tenha paciência.
       
-      Pergunta do interno: ${pergunta}`;
+      Pergunta do louco: ${pergunta}`;
 
-      // Gerando o conteúdo
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
@@ -46,14 +44,10 @@ export default {
     } catch (e) {
       console.error("Erro no surto da Julinha:", e.message);
       
-      // Se der 404 de novo, vamos pro plano de guerra: gemini-pro (que é v1 puro)
-      try {
-          const fallback = genAI.getGenerativeModel({ model: "gemini-pro" });
-          const res = await fallback.generateContent(pergunta);
-          await socket.sendMessage(remoteJid, { text: `💊 *JULINHA (Dopada):* \n\n${res.response.text()}` });
-      } catch (err) {
-          await socket.sendMessage(remoteJid, { text: "❌ Tive um apagão aqui. O choque elétrico foi forte! Tenta de novo." });
-      }
+      // Se ainda der erro, ela avisa que o remédio não bateu
+      await socket.sendMessage(remoteJid, { 
+        text: "❌ O choque elétrico fritou meus neurônios! Tenta de novo em um minuto, se você não for um vegetal." 
+      }, { quoted: webMessage });
     }
   }
 };
