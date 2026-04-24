@@ -1,7 +1,6 @@
-import pkg from 'akinator-api';
-
-// Essa lógica garante que você pegue a classe certa
-const Aki = pkg.default ? (pkg.default.Aki || pkg.default) : (pkg.Aki || pkg);
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const { Aki } = require('akinator-api');
 
 const sessions = {}; 
 
@@ -11,7 +10,7 @@ export default {
   commands: ["aki", "akinator"],
   handle: async ({ socket, remoteJid, userLid, args, webMessage }) => {
     
-    // 1. Se o cara já estiver jogando e mandou !aki <numero>
+    // 1. Se o usuário já estiver em uma partida
     if (sessions[userLid]) {
       const aki = sessions[userLid];
       const resposta = args[0];
@@ -20,19 +19,17 @@ export default {
         try {
           await aki.step(resposta);
 
-          // Se o Akinator já tiver certeza (progresso > 85%)
-          if (aki.progress >= 85 || aki.currentStep >= 35) {
+          if (aki.progress >= 80 || aki.currentStep >= 35) {
             await aki.win();
             const personagem = aki.answers[0];
             delete sessions[userLid];
             
             return await socket.sendMessage(remoteJid, {
               image: { url: personagem.absolute_picture_path },
-              caption: `🧞‍♂️ *O GENIO ACERTOU!* 🧞‍♂️\n\nEu acho que é: *${personagem.name}*\n_${personagem.description}_\n\nMais uma vitória para a Julinha! 😎`
+              caption: `🧞‍♂️ *EU LI SUA MENTE!* 🧞‍♂️\n\nEu acho que é: *${personagem.name}*\n_${personagem.description}_\n\nO Biscoitinho Play me treinou bem! 😎`
             }, { quoted: webMessage });
           }
 
-          // Próxima pergunta
           const pergunta = `🧞‍♂️ *PERGUNTA ${aki.currentStep + 1}*\n\n` +
             `👉 *${aki.question}*\n\n` +
             `0 - Sim\n1 - Não\n2 - Não sei\n3 - Provavelmente sim\n4 - Provavelmente não\n\n` +
@@ -41,26 +38,27 @@ export default {
           return await socket.sendMessage(remoteJid, { text: pergunta }, { quoted: webMessage });
         } catch (err) {
           delete sessions[userLid];
-          return await socket.sendMessage(remoteJid, { text: "❌ O gênio se cansou. Tente iniciar um novo jogo." });
+          return await socket.sendMessage(remoteJid, { text: "❌ O gênio se atrapalhou. Tente novamente." });
         }
       }
     }
 
-    // 2. Iniciar novo jogo (Onde dava o erro de constructor)
+    // 2. Iniciar novo jogo
     try {
-      const aki = new Aki({ region: 'pt' }); // Agora o 'new' vai funcionar!
+      // O 'require' acima garante que o Aki seja um construtor válido agora
+      const aki = new Aki({ region: 'pt' }); 
       await aki.start();
       sessions[userLid] = aki;
 
-      const inicio = `🧞‍♂️ *AKINATOR INICIADO*\n\nPense em um personagem e eu vou ler sua mente!\n\n` +
+      const inicio = `🧞‍♂️ *AKINATOR INICIADO*\n\nPense em alguém e eu vou tentar adivinhar!\n\n` +
         `❓ *${aki.question}*\n\n` +
         `0 - Sim\n1 - Não\n2 - Não sei\n3 - Provavelmente sim\n4 - Provavelmente não\n\n` +
         `_Responda com !aki <numero>_`;
 
       await socket.sendMessage(remoteJid, { text: inicio }, { quoted: webMessage });
     } catch (e) {
-      console.log(e);
-      await socket.sendMessage(remoteJid, { text: "❌ Erro ao despertar o gênio. Tente novamente mais tarde." });
+      console.error(e);
+      await socket.sendMessage(remoteJid, { text: "❌ Erro ao despertar o gênio." });
     }
   }
 };
