@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Sua chave braba que você gerou
+// Sua chave oficial
 const API_KEY = "AIzaSyDxckRqg3iqyyn6yUEw5pwWFWERmi6caPg"; 
 const genAI = new GoogleGenerativeAI(API_KEY);
 
@@ -11,15 +11,15 @@ export default {
   handle: async ({ socket, remoteJid, args, webMessage }) => {
     
     const pergunta = args.join(" ");
-    if (!pergunta) return await socket.sendMessage(remoteJid, { text: "❓ Fala logo o que você quer saber poha!!" });
+    if (!pergunta) return await socket.sendMessage(remoteJid, { text: "❓ Fala logo o que você quer saber, Jadson!" });
 
     try {
-      // USANDO O FLASH 1.5 - O REI DA VELOCIDADE
+      // Aqui está o pulo do gato: usamos o ID do modelo puro
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       
-      const prompt = `Você é a Julinha v1, a IA oficial do grupo Manicômio. 
-      Seu criador é o cara mais fiel da terra  (Jadson). 
-      Seja inteligente, sarcástica e responda de forma direta e muito debochada, parece que viva em um manicomio.
+      const prompt = `Você é a Julinha, a IA oficial do grupo Manicômio. 
+      Seu criador é o cara mais fiel da terra (Jadson). 
+      Responda de forma curta, inteligente e com um toque de deboche MUITO DEBOCHE, voce vive em um Manicomio lembre disso.
       
       Pergunta: ${pergunta}`;
 
@@ -32,12 +32,16 @@ export default {
       }, { quoted: webMessage });
 
     } catch (e) {
-      console.error("Erro no Gemini 1.5 Flash:", e.message);
+      console.error("Erro detalhado:", e);
       
-      if (e.message.includes("404")) {
-          await socket.sendMessage(remoteJid, { text: "❌ O Google ainda não liberou o modelo 1.5 Flash para essa chave. Tente em 10 minutos ou use o gemini-pro temporariamente." });
-      } else {
-          await socket.sendMessage(remoteJid, { text: "❌ Tive um piripaque aqui no 1.5 Flash. Manda de novo!" });
+      // Se der 404 de novo, é porque a sua chave ainda não "ativou" o 1.5 Flash. 
+      // Vamos tentar o Pro como última opção antes de desistir.
+      try {
+          const modelPro = genAI.getGenerativeModel({ model: "gemini-pro" });
+          const res = await modelPro.generateContent(pergunta);
+          await socket.sendMessage(remoteJid, { text: `🤖 *JULINHA (Pro):* \n\n${res.response.text()}` });
+      } catch (err) {
+          await socket.sendMessage(remoteJid, { text: "❌ O Google tá de marcação comigo! Tenta de novo em 2 minutos." });
       }
     }
   }
