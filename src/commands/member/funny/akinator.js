@@ -1,12 +1,14 @@
-import { Aki } from 'akinator-api';
+import pkg from 'akinator-api';
+const { Aki } = pkg;
 
-const sessions = {}; // Guarda o jogo de cada pessoa
+const sessions = {}; 
 
 export default {
   name: "akinator",
   description: "O gênio que adivinha em quem você está pensando.",
   commands: ["aki", "akinator"],
   handle: async ({ socket, remoteJid, userLid, args, webMessage }) => {
+    // ... O resto do código que te mandei antes continua igual ...
     
     // Se o usuário responder a uma pergunta do Akinator
     if (sessions[userLid]) {
