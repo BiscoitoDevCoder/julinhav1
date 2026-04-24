@@ -12,8 +12,8 @@ export default {
     if (!pergunta) return await socket.sendMessage(remoteJid, { text: "💊 Manda a pergunta, ô doido! Quer que eu adivinhe?" });
 
     try {
-      // Falando direto com a API do Google (Versão Estável v1)
-      const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+      // MUDANÇA CRUCIAL: Trocamos o modelo para gemini-pro na URL
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
       
       const corpo = {
         contents: [{
@@ -28,6 +28,7 @@ export default {
 
       const response = await axios.post(url, corpo);
       
+      // Captura o texto da resposta
       const textoSaida = response.data.candidates[0].content.parts[0].text;
 
       await socket.sendMessage(remoteJid, { 
@@ -35,11 +36,19 @@ export default {
       }, { quoted: webMessage });
 
     } catch (e) {
-      console.error("ERRO NA REQUISIÇÃO DIRETA:", e.response?.data || e.message);
+      console.error("ERRO FINAL:", e.response?.data || e.message);
       
-      await socket.sendMessage(remoteJid, { 
-        text: "❌ O Google tá de sacanagem! Tive um surto aqui. Tenta de novo, se seu cérebro de interno permitir." 
-      }, { quoted: webMessage });
+      // Se até o Gemini Pro der erro, a gente tenta a última URL possível
+      try {
+          const urlV1 = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${API_KEY}`;
+          const resV1 = await axios.post(urlV1, corpo);
+          const txtV1 = resV1.data.candidates[0].content.parts[0].text;
+          await socket.sendMessage(remoteJid, { text: `💊 *JULINHA:* \n\n${txtV1.trim()}` });
+      } catch (err) {
+          await socket.sendMessage(remoteJid, { 
+            text: "❌ O Manicômio tá em chamas! O Google bloqueou minha mente. Tenta de novo mais tarde." 
+          }, { quoted: webMessage });
+      }
     }
   }
 };
