@@ -37,14 +37,23 @@ export default {
 
           return await socket.sendMessage(remoteJid, { text: pergunta }, { quoted: webMessage });
         } catch (err) {
+          console.error("Erro no passo do Akinator:", err.message);
           delete sessions[userLid];
-          return await socket.sendMessage(remoteJid, { text: "❌ O gênio se confundiu. Tente novamente." });
+          return await socket.sendMessage(remoteJid, { text: "❌ O gênio se confundiu ou foi bloqueado. Tente novamente." });
         }
       }
     }
 
     try {
-      const aki = new Aki({ region }); 
+      // CONFIGURAÇÃO COM DISFARCE (CAMUFLAGEM)
+      const aki = new Aki({ 
+        region, 
+        childMode: false 
+      });
+
+      // Injetando um User-Agent de navegador real para evitar o Erro 403
+      aki.userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
+
       await aki.start();
       sessions[userLid] = aki;
 
@@ -55,8 +64,9 @@ export default {
 
       await socket.sendMessage(remoteJid, { text: inicio }, { quoted: webMessage });
     } catch (e) {
-      console.error(e);
-      await socket.sendMessage(remoteJid, { text: "❌ Erro ao despertar o gênio. Verifique sua conexão." });
+      console.error("Erro ao iniciar Akinator:", e.message);
+      // Se der 403 aqui, o IP da VPS está realmente bloqueado.
+      await socket.sendMessage(remoteJid, { text: "❌ O gênio detectou que sou um bot e me bloqueou (Erro 403). Tente mais tarde." });
     }
   }
 };
