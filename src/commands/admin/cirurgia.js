@@ -1,51 +1,48 @@
-import fs from "fs";
+import path from "node:path";
+import { ASSETS_DIR } from "../../../config.js";
+import { onlyNumbers } from "../../../utils/index.js";
 
 export default {
   name: "cirurgia",
-  description: "Inicia o protocolo hospitalar de redesignação sexual no paciente citado.",
-  commands: ["cirurgia", "redesignar", "capar"],
-  handle: async ({ socket, remoteJid, webMessage }) => {
-    try {
-      // Pega o alvo por menção ou resposta (usando webMessage que é o seu padrão)
-      const contextInfo = webMessage?.message?.extendedTextMessage?.contextInfo;
-      const paciente = contextInfo?.mentionedJid?.[0] || contextInfo?.participant;
+  description: "Inicia o protocolo hospitalar de redesignação sexual.",
+  commands: ["cirurgia", "capar", "redesignar"],
+  handle: async ({
+    sendGifFromFile,
+    sendErrorReply,
+    userLid,
+    replyLid,
+    args,
+    isReply,
+  }) => {
+    // 1. Identificação do Paciente (Vítima)
+    const targetLid = isReply
+      ? replyLid
+      : args[0]
+      ? `${onlyNumbers(args[0])}@lid`
+      : null;
 
-      if (!paciente) {
-        return await socket.sendMessage(remoteJid, { 
-          text: "❌ *ERRO MÉDICO:* É necessário identificar o paciente via menção ou resposta para iniciar o protocolo cirúrgico." 
-        });
-      }
-
-      const medico = webMessage.key.participant || webMessage.key.remoteJid;
-      const videoPath = "./assets/images/funny/sals.mp4"; 
-
-      const laudo = `🏥 *UNIDADE DE CIRURGIA ESPECIALIZADA*\n\n` +
-        `👨‍⚕️ *Cirurgião-Chefe:* @${medico.split('@')[0]}\n` +
-        `👤 *Paciente:* @${paciente.split('@')[0]}\n\n` +
-        `📋 *RELATÓRIO DE PROCEDIMENTO:* \n` +
-        `Informamos que o paciente foi submetido a uma *Faloplastia de Redesignação Estética*. O procedimento envolveu a dissecação de tecidos superficiais, cauterização venosa e a remoção total do apêndice reprodutor.\n\n` +
-        `✅ Hemostasia realizada.\n` +
-        `✅ Sutura intradérmica concluída.\n` +
-        `✅ Sedação estável durante a extração.\n\n` +
-        `*Conclusão:* Após o sucesso da intervenção, agora finalmente @${paciente.split('@')[0]} possui o órgão genital com que se identifica. ✨`;
-
-      if (fs.existsSync(videoPath)) {
-        await socket.sendMessage(remoteJid, {
-          video: fs.readFileSync(videoPath),
-          caption: laudo,
-          mentions: [medico, paciente],
-          gifPlayback: false 
-        }, { quoted: webMessage });
-      } else {
-        // Se o vídeo não abrir, manda só o texto marcando a galera
-        await socket.sendMessage(remoteJid, { 
-          text: laudo,
-          mentions: [medico, paciente]
-        }, { quoted: webMessage });
-      }
-
-    } catch (error) {
-      console.error("Erro no comando cirurgia:", error);
+    if (!targetLid) {
+      return await sendErrorReply("❌ *ERRO MÉDICO:* Identifique o paciente via menção ou resposta!");
     }
+
+    const userNumber = onlyNumbers(userLid);
+    const targetNumber = onlyNumbers(targetLid);
+
+    // 2. Laudo Médico (Versão "Equilibrada")
+    const laudo = `🏥 *UNIDADE DE CIRURGIA ESPECIALIZADA*\n\n` +
+      `👨‍⚕️ *Cirurgião-Chefe:* @${userNumber}\n` +
+      `👤 *Paciente:* @${targetNumber}\n\n` +
+      `📋 *RELATÓRIO DE PROCEDIMENTO:* \n` +
+      `Informamos que o protocolo de *Redesignação Sexual Estética* foi concluído. O procedimento envolveu a dissecação de tecidos e a remoção total do apêndice reprodutor para fins recreativos.\n\n` +
+      `✅ Sedação estável durante a extração.\n` +
+      `✅ Procedimento irreversível concluído.\n\n` +
+      `*Conclusão:* Após o sucesso da intervenção, agora finalmente @${targetNumber} possui o órgão genital com que se identifica. ✨`;
+
+    // 3. Envio do vídeo sals.mp4
+    await sendGifFromFile(
+      path.resolve(ASSETS_DIR, "images", "funny", "sals.mp4"),
+      laudo,
+      [userLid, targetLid]
+    );
   },
 };
