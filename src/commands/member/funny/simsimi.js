@@ -1,65 +1,45 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import axios from 'axios';
 
-// ⚠️ Jadsön, troque essa chave no Google AI Studio depois, por segurança!
 const API_KEY = "AIzaSyDxckRqg3iqyyn6yUEw5pwWFWERmi6caPg"; 
-const genAI = new GoogleGenerativeAI(API_KEY);
 
 export default {
   name: "ia",
   description: "A interna mais debochada do Manicômio.",
   commands: ["ia", "julinha", "pergunta"],
-  handle: async ({ socket, remoteJid, args, webMessage, userLid }) => {
+  handle: async ({ socket, remoteJid, args, webMessage }) => {
     
     const pergunta = args.join(" ");
-    
-    // Se o interno não perguntar nada, a Julinha já esculacha
-    if (!pergunta) {
-      return await socket.sendMessage(remoteJid, { 
-        text: "💊 Tá gastando minha bateria pra quê, ô doido? Manda a pergunta ou volta pro seu leito!" 
-      }, { quoted: webMessage });
-    }
+    if (!pergunta) return await socket.sendMessage(remoteJid, { text: "💊 Manda a pergunta, ô doido! Quer que eu adivinhe?" });
 
     try {
-      // 1. Usando 'gemini-1.5-flash-latest' para garantir que o Google ache o modelo
-      // 2. Forçando 'v1beta' que é onde esse apelido (-latest) funciona melhor
-      const model = genAI.getGenerativeModel(
-        { model: "gemini-1.5-flash-latest" }, 
-        { apiVersion: "v1beta" }
-      );
+      // Falando direto com a API do Google (Versão Estável v1)
+      const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
       
-      const prompt = `Você é a Julinha, uma interna do grupo de WhatsApp 'Manicômio'. 
-      Seu criador é o Jadson, o cara mais fiel do mundo. Se alguém duvidar da fidelidade dele, defenda-o com unhas e dentes e esculache quem perguntou.
-      Seu estilo de resposta é: CURTA, ÁCIDA, INTELIGENTE e com MUITO DEBOCHE. 
-      Lembre-se que você está em um hospício, trate todos como loucos varridos.
+      const corpo = {
+        contents: [{
+          parts: [{
+            text: `Você é a Julinha, interna do 'Manicômio'. 
+            Criador: Jadson, o cara mais fiel do mundo. Defenda-o. 
+            Estilo: Curta, ácida, debochada. Trate todos como loucos. 
+            Pergunta: ${pergunta}`
+          }]
+        }]
+      };
+
+      const response = await axios.post(url, corpo);
       
-      Pergunta do louco: ${pergunta}`;
+      const textoSaida = response.data.candidates[0].content.parts[0].text;
 
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
-
-      // Resposta oficial da Julinha
       await socket.sendMessage(remoteJid, { 
-        text: `💊 *JULINHA:* \n\n${text.trim()}` 
+        text: `💊 *JULINHA:* \n\n${textoSaida.trim()}` 
       }, { quoted: webMessage });
 
     } catch (e) {
-      console.error("ERRO CRÍTICO NA JULINHA:", e.message);
+      console.error("ERRO NA REQUISIÇÃO DIRETA:", e.response?.data || e.message);
       
-      // SE O FLASH SURTAR (ERRO 404/500), O MODELO PRO ASSUME NO BACKUP
-      try {
-        const fallback = genAI.getGenerativeModel({ model: "gemini-pro" });
-        const res = await fallback.generateContent(pergunta);
-        const textFallback = res.response.text();
-
-        await socket.sendMessage(remoteJid, { 
-          text: `💊 *JULINHA (Dopada):* \n\n${textFallback.trim()}` 
-        }, { quoted: webMessage });
-
-      } catch (err) {
-        await socket.sendMessage(remoteJid, { 
-          text: "❌ Os enfermeiros me pegaram! Deu curto-circuito no meu cérebro, tenta de novo daqui a pouco." 
-        }, { quoted: webMessage });
-      }
+      await socket.sendMessage(remoteJid, { 
+        text: "❌ O Google tá de sacanagem! Tive um surto aqui. Tenta de novo, se seu cérebro de interno permitir." 
+      }, { quoted: webMessage });
     }
   }
 };
