@@ -6,7 +6,6 @@ export default {
   commands: ["topex", "amaex", "rankingex"],
   usage: `${PREFIX}topex`,
   handle: async (props) => {
-    // Usando webMessage que é o padrão do seu bot
     const { socket, remoteJid, webMessage } = props;
 
     try {
@@ -15,36 +14,29 @@ export default {
       const groupMetadata = await socket.groupMetadata(remoteJid);
       let participants = groupMetadata.participants;
 
-      // IDs de controle
-      const sempreNoRank = "243155362418731@lid";
+      // ID que continua proibido de aparecer no rank
       const nuncaNoRank = "107022733291775@lid";
 
-      // 1. Remove quem NÃO pode sair e o VIP que vai ser fixado
-      let filtrados = participants.filter(p => 
-        p.id !== nuncaNoRank && p.id !== sempreNoRank
-      );
+      // 1. Filtra a lista apenas para remover quem não pode sair nunca
+      let filtrados = participants.filter(p => p.id !== nuncaNoRank);
 
-      // 2. Sorteia 4 pessoas do resto do grupo
+      // 2. Sorteia 5 pessoas de forma totalmente aleatória
       const sorteados = filtrados
         .sort(() => Math.random() - 0.5)
-        .slice(0, 4);
-
-      // 3. Monta o rank com o VIP em primeiro
-      const rankFinal = [{ id: sempreNoRank }, ...sorteados];
+        .slice(0, 5);
 
       const medalhas = ["🥇", "🥈", "🥉", "4º", "5º"];
       let ranking = "🤡 *TOP 5 QUE MAIS AMAM O EX* 🤡\n\n";
 
-      rankFinal.forEach((p, index) => {
+      sorteados.forEach((p, index) => {
         ranking += `${medalhas[index]} @${p.id.split("@")[0]}\n`;
       });
 
       ranking += "\n_O sentimento é real, a superação é lenda..._";
 
-      // Enviando com a estrutura correta para evitar o erro de 'fromMe'
       await socket.sendMessage(remoteJid, {
         text: ranking,
-        mentions: rankFinal.map(p => p.id)
+        mentions: sorteados.map(p => p.id)
       }, { quoted: webMessage });
 
     } catch (e) {
