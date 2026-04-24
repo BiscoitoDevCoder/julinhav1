@@ -1,3 +1,8 @@
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+import { Aki } from 'aki-api';
+// ... resto do código igual ao anterior
+
 import { Aki } from 'aki-api';
 
 const sessions = {}; 
