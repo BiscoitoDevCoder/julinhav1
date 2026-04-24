@@ -22,7 +22,7 @@ export default {
     const resposta = `🔮 *ORÁCULO DO MANICÔMIO*\n\n` +
       `❓ *Pergunta:* ${pergunta}\n` +
       `⚖️ *Chance:* ${porcentagem}%\n\n` +
-
+      `_Analisado para @${userNumber}_`;
     await socket.sendMessage(remoteJid, {
       text: resposta,
       mentions: [userLid]
