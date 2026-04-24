@@ -1,12 +1,19 @@
+/**
+ * Menu Ultra Moderno - Julinha v1
+ * Estética Cyber-Minimalista com ReadMore
+ */
+import pkg from "../package.json" with { type: "json" };
+import { BOT_NAME } from "./config.js";
+import { getPrefix } from "./utils/database.js";
+import { readMore } from "./utils/index.js";
+
 export function menuMessage(groupJid) {
   const prefix = getPrefix(groupJid);
   const v = pkg.version;
-  
-  // Método de Força Bruta: Caractere invisível + muitas quebras de linha
-  const readMore = String.fromCharCode(8206).repeat(4001);
 
-  return `〔 **${BOT_NAME.toUpperCase()}** 〕
-${readMore}
+  // O readMore() logo após o título garante o efeito de esconder o resto
+  return `〔 **${BOT_NAME.toUpperCase()}** 〕${readMore()}
+
   ◈ **STATUS DO SISTEMA** ◈
   ⦿ **Versão:** ${v}
   ⦿ **Prefixo:** ${prefix}
