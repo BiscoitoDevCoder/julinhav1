@@ -26,7 +26,7 @@ export default {
             
             return await socket.sendMessage(remoteJid, {
               image: { url: personagem.absolute_picture_path },
-              caption: `🧞‍♂️ *ADIVINHEI!* 🧞‍♂️\n\nEu acho que é: *${personagem.name}*\n_${personagem.description}_\n\nO Biscoitinho Play me treinou para ler mentes! 😎`
+              caption: `🧞‍♂️ *O GENIO LEU SUA MENTE!* 🧞‍♂️\n\nEu acho que é: *${personagem.name}*\n_${personagem.description}_\n\nBiscoitinho me ensinou bem! 😎`
             }, { quoted: webMessage });
           }
 
@@ -37,22 +37,27 @@ export default {
 
           return await socket.sendMessage(remoteJid, { text: pergunta }, { quoted: webMessage });
         } catch (err) {
-          console.error("Erro no passo do Akinator:", err.message);
+          console.error("Erro no passo:", err.message);
           delete sessions[userLid];
-          return await socket.sendMessage(remoteJid, { text: "❌ O gênio se confundiu ou foi bloqueado. Tente novamente." });
+          return await socket.sendMessage(remoteJid, { text: "❌ O gênio se cansou. Tente novamente." });
         }
       }
     }
 
     try {
-      // CONFIGURAÇÃO COM DISFARCE (CAMUFLAGEM)
-      const aki = new Aki({ 
-        region, 
-        childMode: false 
-      });
+      // Criamos a instância
+      const aki = new Aki({ region, childMode: false });
 
-      // Injetando um User-Agent de navegador real para evitar o Erro 403
+      // CONFIGURAÇÃO DE CAMUFLAGEM PESADA
+      // Isso simula um Chrome atualizado no Windows 10
       aki.userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
+      
+      // Alguns servidores checam se você aceita linguagem em português
+      aki.headers = {
+        'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Referer': 'https://pt.akinator.com/',
+        'Origin': 'https://pt.akinator.com/'
+      };
 
       await aki.start();
       sessions[userLid] = aki;
@@ -64,9 +69,13 @@ export default {
 
       await socket.sendMessage(remoteJid, { text: inicio }, { quoted: webMessage });
     } catch (e) {
-      console.error("Erro ao iniciar Akinator:", e.message);
-      // Se der 403 aqui, o IP da VPS está realmente bloqueado.
-      await socket.sendMessage(remoteJid, { text: "❌ O gênio detectou que sou um bot e me bloqueou (Erro 403). Tente mais tarde." });
+      console.error("Erro no Start:", e.message);
+      
+      if (e.message.includes('403')) {
+          await socket.sendMessage(remoteJid, { text: "❌ *BLOQUEIO DE SEGURANÇA*\n\nO servidor do Akinator bloqueou o IP da VPS. Eles não permitem robôs nessa rede hoje. 😔\n\n_Dica: Tente o comando !ia ou !simsimi_" });
+      } else {
+          await socket.sendMessage(remoteJid, { text: "❌ Erro ao despertar o gênio." });
+      }
     }
   }
 };
