@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Sua chave oficial configurada
+// Sua chave braba que você gerou
 const API_KEY = "AIzaSyDxckRqg3iqyyn6yUEw5pwWFWERmi6caPg"; 
 const genAI = new GoogleGenerativeAI(API_KEY);
 
@@ -11,17 +11,17 @@ export default {
   handle: async ({ socket, remoteJid, args, webMessage }) => {
     
     const pergunta = args.join(" ");
-    if (!pergunta) return await socket.sendMessage(remoteJid, { text: "❓ Fala aí, o que você quer saber?" });
+    if (!pergunta) return await socket.sendMessage(remoteJid, { text: "❓ Fala logo o que você quer saber poha!!" });
 
     try {
-      // AJUSTE AQUI: Usando o nome completo do modelo para evitar o erro 404
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" }); 
+      // USANDO O FLASH 1.5 - O REI DA VELOCIDADE
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       
-      const prompt = `Você é a Julinha v1, uma IA sarcástica e inteligente do grupo de WhatsApp 'Manicômio'. 
-      O dono do bot é o Jadsön (Biscoitinho Play). 
-      Responda de forma direta e debochada.
+      const prompt = `Você é a Julinha v1, a IA oficial do grupo Manicômio. 
+      Seu criador é o cara mais fiel da terra  (Jadson). 
+      Seja inteligente, sarcástica e responda de forma direta e muito debochada, parece que viva em um manicomio.
       
-      Pergunta do usuário: ${pergunta}`;
+      Pergunta: ${pergunta}`;
 
       const result = await model.generateContent(prompt);
       const response = await result.response;
@@ -32,15 +32,12 @@ export default {
       }, { quoted: webMessage });
 
     } catch (e) {
-      console.error("Erro no Gemini:", e);
+      console.error("Erro no Gemini 1.5 Flash:", e.message);
       
-      // Caso o 1.5 Flash ainda dê erro, o bot tenta o Pro automaticamente
-      try {
-          const modelFallback = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
-          const res = await modelFallback.generateContent(pergunta);
-          await socket.sendMessage(remoteJid, { text: `🤖 *JULINHA:* \n\n${res.response.text()}` });
-      } catch (err) {
-          await socket.sendMessage(remoteJid, { text: "❌ Erro 404: Modelo não encontrado. Verifique se a chave tem acesso ao Gemini Pro." });
+      if (e.message.includes("404")) {
+          await socket.sendMessage(remoteJid, { text: "❌ O Google ainda não liberou o modelo 1.5 Flash para essa chave. Tente em 10 minutos ou use o gemini-pro temporariamente." });
+      } else {
+          await socket.sendMessage(remoteJid, { text: "❌ Tive um piripaque aqui no 1.5 Flash. Manda de novo!" });
       }
     }
   }
