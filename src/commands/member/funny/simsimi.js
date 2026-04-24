@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// Chave do cara mais fiel da terra
 const API_KEY = "AIzaSyDxckRqg3iqyyn6yUEw5pwWFWERmi6caPg"; 
 
 export default {
@@ -9,18 +10,18 @@ export default {
   handle: async ({ socket, remoteJid, args, webMessage }) => {
     
     const pergunta = args.join(" ");
-    if (!pergunta) return await socket.sendMessage(remoteJid, { text: "💊 Manda a pergunta, ô doido! Quer que eu adivinhe?" });
+    if (!pergunta) return await socket.sendMessage(remoteJid, { text: "💊 Manda a pergunta! Ou vai ficar aí babando no leito?" });
 
     try {
-      // MUDANÇA CRUCIAL: Trocamos o modelo para gemini-pro na URL
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
+      // USANDO A V1 (ESTÁVEL) E O NOME QUE A IA MANDOU (GEMINI-1.5-FLASH)
+      const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
       
       const corpo = {
         contents: [{
           parts: [{
-            text: `Você é a Julinha, interna do 'Manicômio'. 
+            text: `Você é a Julinha , interna do 'Manicômio'. 
             Criador: Jadson, o cara mais fiel do mundo. Defenda-o. 
-            Estilo: Curta, ácida, debochada. Trate todos como loucos. 
+            Estilo: Resposta CURTA, MUITO DEBOCHADA e INTELIGENTE. Trate como louco. 
             Pergunta: ${pergunta}`
           }]
         }]
@@ -28,7 +29,7 @@ export default {
 
       const response = await axios.post(url, corpo);
       
-      // Captura o texto da resposta
+      // Pega o texto da resposta (O caminho oficial do JSON da Google)
       const textoSaida = response.data.candidates[0].content.parts[0].text;
 
       await socket.sendMessage(remoteJid, { 
@@ -36,17 +37,17 @@ export default {
       }, { quoted: webMessage });
 
     } catch (e) {
-      console.error("ERRO FINAL:", e.response?.data || e.message);
+      console.error("ERRO NO MANICÔMIO:", e.response?.data || e.message);
       
-      // Se até o Gemini Pro der erro, a gente tenta a última URL possível
+      // Se der erro de 404 de novo, vamos tentar a URL v1beta com o mesmo modelo
       try {
-          const urlV1 = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${API_KEY}`;
-          const resV1 = await axios.post(urlV1, corpo);
-          const txtV1 = resV1.data.candidates[0].content.parts[0].text;
-          await socket.sendMessage(remoteJid, { text: `💊 *JULINHA:* \n\n${txtV1.trim()}` });
+          const urlBeta = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+          const resBeta = await axios.post(urlBeta, corpo);
+          const txtBeta = resBeta.data.candidates[0].content.parts[0].text;
+          await socket.sendMessage(remoteJid, { text: `💊 *JULINHA:* \n\n${txtBeta.trim()}` });
       } catch (err) {
           await socket.sendMessage(remoteJid, { 
-            text: "❌ O Manicômio tá em chamas! O Google bloqueou minha mente. Tenta de novo mais tarde." 
+            text: "❌ O Google bloqueou meus eletrochoques! Tenta de novo em 1 minuto." 
           }, { quoted: webMessage });
       }
     }
