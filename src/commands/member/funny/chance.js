@@ -1,5 +1,5 @@
-import { onlyNumbers } from "../../utils/index.js";
-
+import { PREFIX } from "../../../config.js";
+import { onlyNumbers } from "../../../utils/index.js";
 export default {
   name: "chance",
   description: "Calcula a probabilidade de algo acontecer.",
