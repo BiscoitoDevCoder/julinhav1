@@ -1,13 +1,12 @@
 import fs from "fs";
-import { PREFIX } from "../../../config.js";
 
 export default {
   name: "cirurgia",
   description: "Inicia o protocolo hospitalar de redesignação sexual no paciente citado.",
   commands: ["cirurgia", "redesignar", "capar"],
-  usage: `${PREFIX}cirurgia @paciente`,
   handle: async ({ socket, remoteJid, webMessage }) => {
     try {
+      // Pega o alvo por menção ou resposta (usando webMessage que é o seu padrão)
       const contextInfo = webMessage?.message?.extendedTextMessage?.contextInfo;
       const paciente = contextInfo?.mentionedJid?.[0] || contextInfo?.participant;
 
@@ -38,10 +37,11 @@ export default {
           gifPlayback: false 
         }, { quoted: webMessage });
       } else {
+        // Se o vídeo não abrir, manda só o texto marcando a galera
         await socket.sendMessage(remoteJid, { 
           text: laudo,
           mentions: [medico, paciente]
-        });
+        }, { quoted: webMessage });
       }
 
     } catch (error) {
