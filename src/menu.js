@@ -52,6 +52,6 @@ export function menuMessage(groupJid) {
   ❯ ${prefix}blur • ${prefix}rip • ${prefix}pixel • ${prefix}gray
   ❯ ${prefix}cadeia • ${prefix}espelhar • ${prefix}inverter
 
-  ---
-  _Julinha v1 - Interface Interativa_`;
+> 💡 _Clique em 'Ler mais' para ver todos os comandos._`;
+
 }
