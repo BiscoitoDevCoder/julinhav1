@@ -1,9 +1,10 @@
-import { PREFIX } from "../../config.js";
+import { PREFIX } from "../../../config.js";
 
 export default {
   name: "amorodio",
   description: "Mede aleatoriamente o nível de amor ou ódio entre duas pessoas",
   commands: ["amorodio", "ao"],
+  usage: `${PREFIX}amorodio @mencione`,
   handle: async ({ socket, remoteJid, fullMessage }) => {
     const mentioned = fullMessage?.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
     const quoted = fullMessage?.message?.extendedTextMessage?.contextInfo?.participant;
