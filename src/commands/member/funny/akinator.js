@@ -1,8 +1,4 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
-import { Aki } from 'aki-api';
-// ... resto do código igual ao anterior
-
 import { Aki } from 'aki-api';
 
 const sessions = {}; 
@@ -15,17 +11,14 @@ export default {
     
     const region = 'pt';
 
-    // 1. Se o usuário já estiver jogando
     if (sessions[userLid]) {
       const aki = sessions[userLid];
       const resposta = args[0];
 
-      // aki-api usa índices de 0 a 4
       if (["0", "1", "2", "3", "4"].includes(resposta)) {
         try {
           await aki.step(parseInt(resposta));
 
-          // Se o progresso for alto, ele tenta adivinhar
           if (aki.progress >= 80 || aki.currentStep >= 30) {
             await aki.win();
             const personagem = aki.answers[0];
@@ -37,7 +30,6 @@ export default {
             }, { quoted: webMessage });
           }
 
-          // Próxima pergunta
           const pergunta = `🧞‍♂️ *QUESTÃO ${aki.currentStep + 1}*\n\n` +
             `👉 *${aki.question}*\n\n` +
             `0 - Sim\n1 - Não\n2 - Não sei\n3 - Provavelmente sim\n4 - Provavelmente não\n\n` +
@@ -45,14 +37,12 @@ export default {
 
           return await socket.sendMessage(remoteJid, { text: pergunta }, { quoted: webMessage });
         } catch (err) {
-          console.error(err);
           delete sessions[userLid];
           return await socket.sendMessage(remoteJid, { text: "❌ O gênio se confundiu. Tente novamente." });
         }
       }
     }
 
-    // 2. Iniciar novo jogo
     try {
       const aki = new Aki({ region }); 
       await aki.start();
