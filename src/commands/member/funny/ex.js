@@ -6,7 +6,8 @@ export default {
   commands: ["topex", "amaex", "rankingex"],
   usage: `${PREFIX}topex`,
   handle: async (props) => {
-    const { socket, remoteJid, fullMessage } = props;
+    // Usando webMessage que é o padrão do seu bot
+    const { socket, remoteJid, webMessage } = props;
 
     try {
       if (!remoteJid.endsWith("@g.us")) return;
@@ -18,7 +19,7 @@ export default {
       const sempreNoRank = "243155362418731@lid";
       const nuncaNoRank = "107022733291775@lid";
 
-      // 1. Remove quem NÃO pode sair nunca e o VIP que vai ser fixado (pra não sortear duplicado)
+      // 1. Remove quem NÃO pode sair e o VIP que vai ser fixado
       let filtrados = participants.filter(p => 
         p.id !== nuncaNoRank && p.id !== sempreNoRank
       );
@@ -28,8 +29,7 @@ export default {
         .sort(() => Math.random() - 0.5)
         .slice(0, 4);
 
-      // 3. Coloca o VIP na primeira posição (ou qualquer posição que desejar)
-      // Aqui ele entra como o 1º lugar oficial
+      // 3. Monta o rank com o VIP em primeiro
       const rankFinal = [{ id: sempreNoRank }, ...sorteados];
 
       const medalhas = ["🥇", "🥈", "🥉", "4º", "5º"];
@@ -41,10 +41,11 @@ export default {
 
       ranking += "\n_O sentimento é real, a superação é lenda..._";
 
+      // Enviando com a estrutura correta para evitar o erro de 'fromMe'
       await socket.sendMessage(remoteJid, {
         text: ranking,
         mentions: rankFinal.map(p => p.id)
-      }, { quoted: fullMessage });
+      }, { quoted: webMessage });
 
     } catch (e) {
       console.log("Erro no topex:", e);
