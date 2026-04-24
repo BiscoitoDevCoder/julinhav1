@@ -17,7 +17,7 @@ const BOT_PROCESS_NAME = 'takeshi-bot';
 
 // ROTA PRINCIPAL
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'central.html'));
 });
 
 // Rota para ligar/desligar
