@@ -23,24 +23,20 @@ export default {
         : null;
 
       if (!targetLid) {
-        return await sendErrorReply("❌ *ERRO MÉDICO:* Identifique o paciente via menção ou resposta!");
+        return await sendErrorReply("❌ *ERRO:* Identifique o paciente para a cirurgia!");
       }
 
       const userNumber = onlyNumbers(userLid);
       const targetNumber = onlyNumbers(targetLid);
 
-      // 2. Laudo Médico (O texto completo que você pediu)
-      const laudo = `🏥 *UNIDADE DE CIRURGIA ESPECIALIZADA*\n\n` +
-        `👨‍⚕️ *Cirurgião-Chefe:* @${userNumber}\n` +
+      // 2. Laudo Médico - Centro Cirúrgico do Manicômio
+      const laudo = `🏥 *CENTRO CIRÚRGICO DO MANICÔMIO* 🏥\n\n` +
+        `👨‍⚕️ *Cirurgião:* @${userNumber}\n` +
         `👤 *Paciente:* @${targetNumber}\n\n` +
-        `📋 *RELATÓRIO DE PROCEDIMENTO:* \n` +
-        `Informamos que o protocolo de *Redesignação Sexual Estética* foi concluído. O procedimento envolveu a dissecação de tecidos superficiais e a remoção total do apêndice reprodutor para fins recreativos.\n\n` +
-        `✅ Sedação estável durante a extração.\n` +
-        `✅ Procedimento irreversível concluído.\n\n` +
-        `*Conclusão:* Após o sucesso da intervenção, agora finalmente @${targetNumber} possui o órgão genital com que se identifica. ✨`;
+        `📋 *LAUDO:* Procedimento de *Redesignação Sexual* concluído via ressecção total do tecido cavernoso e extração peniana sem intercorrências.\n\n` +
+        `*Conclusão:* Agora finalmente @${targetNumber} possui o órgão genital com que se identifica. ✨`;
 
-      // 3. Envio como GIF (Automático e em Loop)
-      // A função sendGifFromFile já envia com a flag gifPlayback ativada por padrão
+      // 3. Envio como GIF (Loop infinito e automático)
       await sendGifFromFile(
         path.resolve(ASSETS_DIR, "images", "funny", "sals.mp4"),
         laudo,
@@ -49,7 +45,7 @@ export default {
 
     } catch (error) {
       console.error("Erro no comando cirurgia:", error);
-      await sendErrorReply("Houve um erro técnico ao processar a cirurgia.");
+      await sendErrorReply("Houve um erro técnico no centro cirúrgico.");
     }
   },
 };
