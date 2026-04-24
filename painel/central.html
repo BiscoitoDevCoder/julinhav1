@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Julinha V1 - Painel</title>
+    <link rel="stylesheet" href="css.css">
+</head>
+<body>
+    <main class="dashboard">
+        <section class="panel-card">
+            <div class="panel-header">
+                <div>
+                    <h1>Painel de Controle</h1>
+                    <p>Gerencie o bot Julinha V1 com ações rápidas e status visual.</p>
+                </div>
+                <div class="status-badge offline" id="bot-status">Desligado</div>
+            </div>
+
+            <div class="panel-body">
+                <div class="panel-section">
+                    <h2>Status do Bot</h2>
+                    <p id="status-text">O bot está atualmente desligado. Use o botão abaixo para ligar ou desligar.</p>
+                    <button class="btn toggle-btn" id="toggle-btn" type="button">Ligar Bot</button>
+                </div>
+
+                <div class="panel-section">
+                    <h2>Outras Funções</h2>
+                    <div class="button-grid">
+                        <button class="btn secondary-btn" type="button" id="restart-btn">Reiniciar Bot</button>
+                        <button class="btn secondary-btn" type="button" id="qrcode-btn">Exibir QR Code</button>
+                        <button class="btn secondary-btn" type="button" id="log-btn">Ver Logs</button>
+                        <button class="btn secondary-btn" type="button" id="config-btn">Abrir Configuração</button>
+                    </div>
+                    <p class="hint">Os botões acima agora estão conectados ao backend via Fetch API.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const statusBadge = document.getElementById('bot-status');
+        const statusText = document.getElementById('status-text');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const restartBtn = document.getElementById('restart-btn');
+
+        let botOnline = false;
+
+        // Função para conversar com o server.js
+        async function callApi(endpoint, data) {
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('Erro na conexão:', error);
+                return { success: false, message: 'Erro ao conectar no servidor.' };
+            }
+        }
+
+        const updateUi = () => {
+            if (botOnline) {
+                statusBadge.textContent = 'Ligado';
+                statusBadge.classList.add('online');
+                statusBadge.classList.remove('offline');
+                statusText.textContent = 'O bot está ativo. Você pode desligá-lo a qualquer momento.';
+                toggleBtn.textContent = 'Desligar Bot';
+                toggleBtn.style.background = "#ff4d4d"; // Vermelho ao ligar
+            } else {
+                statusBadge.textContent = 'Desligado';
+                statusBadge.classList.add('offline');
+                statusBadge.classList.remove('online');
+                statusText.textContent = 'O bot está atualmente desligado. Use o botão acima para ligar.';
+                toggleBtn.textContent = 'Ligar Bot';
+                toggleBtn.style.background = ""; // Volta ao padrão
+            }
+        };
+
+        // Lógica de Ligar / Desligar
+        toggleBtn.addEventListener('click', async () => {
+            const action = botOnline ? 'stop' : 'start';
+            const res = await callApi('/api/toggle', { action });
+            
+            if (res.success) {
+                botOnline = !botOnline;
+                updateUi();
+            } else {
+                alert('Erro ao alterar status: ' + res.message);
+            }
+        });
+
+        // Lógica de Reiniciar
+        restartBtn.addEventListener('click', async () => {
+            restartBtn.textContent = 'Reiniciando...';
+            restartBtn.disabled = true;
+            
+            const res = await callApi('/api/restart', {});
+            
+            if (res.success) {
+                alert('Julinha está sendo reiniciada!');
+            }
+            
+            setTimeout(() => {
+                restartBtn.textContent = 'Reiniciar Bot';
+                restartBtn.disabled = false;
+            }, 3000);
+        });
+
+        // Botões ainda não implementados no backend (Apenas aviso)
+        ['qrcode-btn', 'log-btn', 'config-btn'].forEach(id => {
+            document.getElementById(id).addEventListener('click', () => {
+                alert('Essa função exige integração com o sistema de arquivos/logs do bot.');
+            });
+        });
+
+        updateUi();
+    </script>
+</body>
+</html>
