@@ -10,18 +10,17 @@ export default {
   handle: async ({ socket, remoteJid, args, webMessage }) => {
     
     const pergunta = args.join(" ");
-    if (!pergunta) return await socket.sendMessage(remoteJid, { text: "💊 Manda a pergunta! Ou vai ficar aí babando no leito?" });
+    if (!pergunta) return await socket.sendMessage(remoteJid, { text: "💊 Manda a pergunta ou volta pro banho de sol!" });
 
     try {
-      // USANDO A V1 (ESTÁVEL) E O NOME QUE A IA MANDOU (GEMINI-1.5-FLASH)
-      const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+      // USANDO O NOME QUE VOCÊ DESCOBRIU NO ENDPOINT V1BETA (onde os modelos preview moram)
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${API_KEY}`;
       
       const corpo = {
         contents: [{
           parts: [{
-            text: `Você é a Julinha , interna do 'Manicômio'. 
-            Criador: Jadson, o cara mais fiel do mundo. Defenda-o. 
-            Estilo: Resposta CURTA, MUITO DEBOCHADA e INTELIGENTE. Trate como louco. 
+            text: `Você é a Julinha, interna do grupo 'Manicômio' e vive dentro de um Manicômio. 
+            Estilo: MUITO DEBOCHE, sarcasmo e inteligência. Respostas curtas.
             Pergunta: ${pergunta}`
           }]
         }]
@@ -29,7 +28,7 @@ export default {
 
       const response = await axios.post(url, corpo);
       
-      // Pega o texto da resposta (O caminho oficial do JSON da Google)
+      // O caminho do JSON da Google para o texto
       const textoSaida = response.data.candidates[0].content.parts[0].text;
 
       await socket.sendMessage(remoteJid, { 
@@ -37,19 +36,12 @@ export default {
       }, { quoted: webMessage });
 
     } catch (e) {
-      console.error("ERRO NO MANICÔMIO:", e.response?.data || e.message);
+      console.error("ERRO NO 3.1:", e.response?.data || e.message);
       
-      // Se der erro de 404 de novo, vamos tentar a URL v1beta com o mesmo modelo
-      try {
-          const urlBeta = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-          const resBeta = await axios.post(urlBeta, corpo);
-          const txtBeta = resBeta.data.candidates[0].content.parts[0].text;
-          await socket.sendMessage(remoteJid, { text: `💊 *JULINHA:* \n\n${txtBeta.trim()}` });
-      } catch (err) {
-          await socket.sendMessage(remoteJid, { 
-            text: "❌ O Google bloqueou meus eletrochoques! Tenta de novo em 1 minuto." 
-          }, { quoted: webMessage });
-      }
+      // Se der erro de nome de novo, ele avisa no console o motivo real
+      await socket.sendMessage(remoteJid, { 
+        text: "❌ Meu cérebro de 3.1 deu um tique! Tenta de novo em 1 minuto." 
+      }, { quoted: webMessage });
     }
   }
 };
