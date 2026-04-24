@@ -1,30 +1,30 @@
-import translate from 'translate-google-api';
+import axios from 'axios';
 
 export default {
-  name: "simsimi",
-  description: "O bot mais debochado da internet.",
-  commands: ["simi", "simsimi", "julinha"],
+  name: "ia",
+  description: "A inteligência suprema da Julinha.",
+  commands: ["ia", "julinha", "pergunta"],
   handle: async ({ socket, remoteJid, args, webMessage }) => {
     
-    const textoUsuario = args.join(" ");
-    if (!textoUsuario) return await socket.sendMessage(remoteJid, { text: "❓ Mande algo para eu responder! Ex: !simi oi julinha" });
+    const pergunta = args.join(" ");
+    if (!pergunta) return await socket.sendMessage(remoteJid, { text: "❓ O que você quer saber? Ex: !ia como fritar um ovo?" });
 
     try {
-      // Usando uma API pública do SimSimi
-      const url = `https://api.simsimi.vn/v2/simsimi?text=${encodeURIComponent(textoUsuario)}&lc=pt`;
+      // Usando uma API de IA gratuita e estável
+      const response = await axios.get(`https://podre-api.vercel.app/api/gemini?pergunta=${encodeURIComponent(pergunta)}`);
       
-      const response = await fetch(url);
-      const data = await response.json();
+      const resposta = response.data.resultado || response.data.response;
 
-      let resposta = data.result || "Tô sem paciência agora, pergunta depois.";
+      if (!resposta) throw new Error("Sem resposta");
 
-      // Envia a resposta debochada
+      // Envia a resposta da IA
       await socket.sendMessage(remoteJid, { 
-        text: `🐥 *SIMSIMI:* ${resposta}` 
+        text: `🤖 *JULINHA IA:* \n\n${resposta}` 
       }, { quoted: webMessage });
 
     } catch (e) {
-      await socket.sendMessage(remoteJid, { text: "❌ Minha língua travou, tenta de novo!" });
+      console.error(e);
+      await socket.sendMessage(remoteJid, { text: "❌ Meu processador superaqueceu! Tente perguntar de outro jeito." });
     }
   }
 };
